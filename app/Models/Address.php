@@ -33,4 +33,10 @@ class Address extends Model
         self::TYPE_TEMPORARY => 'Temporary Address',
         self::TYPE_HEADQUARTERS => 'Headquarters Address'
     ];
+
+     // Relationships
+    public function addressable()
+    {
+        return $this->morphTo();
+    }
 }

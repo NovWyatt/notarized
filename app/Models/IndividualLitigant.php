@@ -65,4 +65,10 @@ class IndividualLitigant extends Model
         self::MARITAL_DIVORCED => 'Divorced',
         self::MARITAL_MARRIED => 'Married'
     ];
+
+    // Relationships
+    public function litigant()
+    {
+        return $this->belongsTo(Litigant::class);
+    }
 }

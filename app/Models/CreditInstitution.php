@@ -41,4 +41,25 @@ class CreditInstitution extends Model
         self::TYPE_BRANCH => 'Branch',
         self::TYPE_TRANSACTION_OFFICE => 'Transaction Office'
     ];
+
+    // Relationships
+    public function litigant()
+    {
+        return $this->belongsTo(Litigant::class);
+    }
+
+    public function representative()
+    {
+        return $this->belongsTo(Litigant::class, 'representative_id');
+    }
+
+    public function additionalInfo()
+    {
+        return $this->hasOne(CreditInstitutionAdditionalInfo::class);
+    }
+
+    public function registrationRepresentatives()
+    {
+        return $this->morphMany(RegistrationRepresentative::class, 'representable');
+    }
 }

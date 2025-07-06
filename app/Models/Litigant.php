@@ -14,21 +14,58 @@ class Litigant extends Model
     protected $fillable = [
         'full_name',
         'type',
-        'notes'
+        'user_id',
+        'notes',
     ];
 
     protected $casts = [
-        'type' => 'string',
-        'deleted_at' => 'datetime'
+        'type'       => 'string',
+        'deleted_at' => 'datetime',
     ];
 
-    const TYPE_INDIVIDUAL = 'individual';
-    const TYPE_ORGANIZATION = 'organization';
+    const TYPE_INDIVIDUAL         = 'individual';
+    const TYPE_ORGANIZATION       = 'organization';
     const TYPE_CREDIT_INSTITUTION = 'credit_institution';
 
     const TYPES = [
-        self::TYPE_INDIVIDUAL => 'Individual',
-        self::TYPE_ORGANIZATION => 'Organization',
-        self::TYPE_CREDIT_INSTITUTION => 'Credit Institution'
+        self::TYPE_INDIVIDUAL         => 'Individual',
+        self::TYPE_ORGANIZATION       => 'Organization',
+        self::TYPE_CREDIT_INSTITUTION => 'Credit Institution',
     ];
+
+    // Relationships
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function individualLitigant()
+    {
+        return $this->hasOne(IndividualLitigant::class);
+    }
+
+    public function organization()
+    {
+        return $this->hasOne(Organization::class);
+    }
+
+    public function creditInstitution()
+    {
+        return $this->hasOne(CreditInstitution::class);
+    }
+
+    public function addresses()
+    {
+        return $this->morphMany(Address::class, 'addressable');
+    }
+
+    public function marriageInformation()
+    {
+        return $this->hasOne(MarriageInformation::class);
+    }
+
+    public function spouse()
+    {
+        return $this->hasOneThrough(Litigant::class, MarriageInformation::class, 'litigant_id', 'id', 'id', 'spouse_id');
+    }
 }

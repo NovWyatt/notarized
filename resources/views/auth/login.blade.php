@@ -1,73 +1,150 @@
-@extends('layouts.app')
+<!doctype html>
+<html lang="vi" dir="ltr">
 
-@section('content')
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">{{ __('Login') }}</div>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Phần Mềm Quản Lý CSDL Công Chứng, Chứng Thực & Hỗ Trợ Nghiệp Vụ Công Chứng, Chứng Thực</title>
 
-                <div class="card-body">
-                    <form method="POST" action="{{ route('login') }}">
-                        @csrf
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="{{ asset('assets/images/favicon.ico') }}" />
 
-                        <div class="row mb-3">
-                            <label for="email" class="col-md-4 col-form-label text-md-end">{{ __('Email Address') }}</label>
+    <!-- Library / Plugin Css Build -->
+    <link rel="stylesheet" href="{{ asset('assets/css/core/libs.min.css') }}" />
 
-                            <div class="col-md-6">
-                                <input id="email" type="email" class="form-control @error('email') is-invalid @enderror" name="email" value="{{ old('email') }}" required autocomplete="email" autofocus>
+    <!-- Hope Ui Design System Css -->
+    <link rel="stylesheet" href="{{ asset('assets/css/hope-ui.min.css') }}" />
 
-                                @error('email')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
-                            </div>
-                        </div>
+    <!-- Custom Css -->
+    <link rel="stylesheet" href="{{ asset('assets/css/custom.min.css') }}" />
 
-                        <div class="row mb-3">
-                            <label for="password" class="col-md-4 col-form-label text-md-end">{{ __('Password') }}</label>
+    <!-- Dark Css -->
+    <link rel="stylesheet" href="{{ asset('assets/css/dark.min.css') }}" />
 
-                            <div class="col-md-6">
-                                <input id="password" type="password" class="form-control @error('password') is-invalid @enderror" name="password" required autocomplete="current-password">
+    <!-- Customizer Css -->
+    <link rel="stylesheet" href="{{ asset('assets/css/customizer.min.css') }}" />
 
-                                @error('password')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
-                            </div>
-                        </div>
+    <!-- RTL Css -->
+    <link rel="stylesheet" href="{{ asset('assets/css/rtl.min.css') }}" />
 
-                        <div class="row mb-3">
-                            <div class="col-md-6 offset-md-4">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="remember" id="remember" {{ old('remember') ? 'checked' : '' }}>
 
-                                    <label class="form-check-label" for="remember">
-                                        {{ __('Remember Me') }}
-                                    </label>
+
+</head>
+
+<body class=" " data-bs-spy="scroll" data-bs-target="#elements-section" data-bs-offset="0" tabindex="0">
+    <!-- loader Start -->
+    <div id="loading">
+        <div class="loader simple-loader">
+            <div class="loader-body"></div>
+        </div>
+    </div>
+    <!-- loader END -->
+
+    <div class="wrapper">
+        <section class="login-content">
+            <div class="row m-0 align-items-center bg-white vh-100">
+                <div class="col-md-6">
+                    <div class="row justify-content-center">
+                        <div class="col-md-10">
+                            <div class="card card-transparent shadow-none d-flex justify-content-center mb-0 auth-card">
+                                <div class="card-body">
+                                    <h2 class="mb-2 text-center">Đăng Nhập</h2>
+                                    <p class="text-center">Vui lòng nhập tài khoản và mật khẩu để sử dụng hệ thống.</p>
+                                    <form method="POST" action="{{ route('login') }}">
+                                        @csrf
+                                        <div class="row">
+                                            <div class="col-lg-12">
+                                                <div class="form-group">
+                                                    <label for="email" class="form-label">Tài khoản</label>
+                                                    <input type="email"
+                                                        class="form-control @error('email') is-invalid @enderror"
+                                                        id="email" name="email" value="{{ old('email') }}" required
+                                                        autofocus placeholder=" ">
+                                                    @error('email')
+                                                    <span class="invalid-feedback d-block" role="alert">
+                                                        <strong>{{ $message }}</strong>
+                                                    </span>
+                                                    @enderror
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-12">
+                                                <div class="form-group">
+                                                    <label for="password" class="form-label">Mật Khẩu</label>
+                                                    <input type="password"
+                                                        class="form-control @error('password') is-invalid @enderror"
+                                                        id="password" name="password" required placeholder=" ">
+                                                    @error('password')
+                                                    <span class="invalid-feedback d-block" role="alert">
+                                                        <strong>{{ $message }}</strong>
+                                                    </span>
+                                                    @enderror
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-12 d-flex justify-content-between">
+                                                <div class="form-check mb-3">
+                                                    <input type="checkbox" class="form-check-input" id="remember"
+                                                        name="remember" {{ old('remember') ? 'checked' : '' }}>
+                                                    <label class="form-check-label" for="remember">Ghi nhớ tôi</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="d-flex justify-content-center">
+                                            <button type="submit" class="btn btn-primary">Đăng Nhập</button>
+                                        </div>
+                                        <p class="mt-3 text-center">
+                                            Copyright © 2025 Wyatt. Version 1.0.
+                                        </p>
+                                    </form>
+
                                 </div>
                             </div>
                         </div>
+                    </div>
+                    <div class="sign-bg">
+                        <img src="{{ asset('company_logo.png') }}" alt="Logo" class="icon-100" />
 
-                        <div class="row mb-0">
-                            <div class="col-md-8 offset-md-4">
-                                <button type="submit" class="btn btn-primary">
-                                    {{ __('Login') }}
-                                </button>
-
-                                @if (Route::has('password.request'))
-                                    <a class="btn btn-link" href="{{ route('password.request') }}">
-                                        {{ __('Forgot Your Password?') }}
-                                    </a>
-                                @endif
-                            </div>
-                        </div>
-                    </form>
+                    </div>
+                </div>
+                <div class="col-md-6 d-md-block d-none bg-primary p-0 mt-n1 vh-100 overflow-hidden">
+                    <img src="{{ asset('assets/images/auth/01.png') }}" class="img-fluid gradient-main animated-scaleX"
+                        alt="images">
                 </div>
             </div>
-        </div>
+        </section>
     </div>
-</div>
-@endsection
+
+    <!-- Library Bundle Script -->
+    <script src="{{ asset('assets/js/core/libs.min.js') }}"></script>
+
+    <!-- External Library Bundle Script -->
+    <script src="{{ asset('assets/js/core/external.min.js') }}"></script>
+
+    <!-- Widgetchart Script -->
+    <script src="{{ asset('assets/js/charts/widgetcharts.js') }}"></script>
+
+    <!-- mapchart Script -->
+    <script src="{{ asset('assets/js/charts/vectore-chart.js') }}"></script>
+    <script src="{{ asset('assets/js/charts/dashboard.js') }}"></script>
+
+    <!-- fslightbox Script -->
+    <script src="{{ asset('assets/js/plugins/fslightbox.js') }}"></script>
+
+    <!-- Settings Script -->
+    <script src="{{ asset('assets/js/plugins/setting.js') }}"></script>
+
+    <!-- Slider-tab Script -->
+    <script src="{{ asset('assets/js/plugins/slider-tabs.js') }}"></script>
+
+    <!-- Form Wizard Script -->
+    <script src="{{ asset('assets/js/plugins/form-wizard.js') }}"></script>
+
+    <!-- AOS Animation Plugin -->
+    {{-- (Không có script nào ở đây) --}}
+
+    <!-- App Script -->
+    <script src="{{ asset('assets/js/hope-ui.js') }}" defer></script>
+
+
+</body>
+
+</html>

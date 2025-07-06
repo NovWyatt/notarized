@@ -15,11 +15,13 @@ class CreateLitigantsTable extends Migration
             $table->id();
             $table->string('full_name')->nullable(false); // Không được null
             $table->enum('type', ['individual', 'organization', 'credit_institution']);
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade'); // Người tạo
             $table->text('notes')->nullable();
             $table->timestamps();
             $table->softDeletes();
 
             $table->index(['type', 'full_name']);
+            $table->index('user_id');
         });
     }
 
