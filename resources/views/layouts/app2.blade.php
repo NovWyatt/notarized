@@ -82,7 +82,7 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="#">
+                        <a class="nav-link" aria-current="page" href="#">
                             <span class="item-name">Tạo Hồ Sơ</span>
                         </a>
                     </li>
@@ -97,7 +97,7 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" aria-current="page" href="{{ route('litigants.index') }}">
+                        <a class="nav-link {{ request()->is('litigants*') ? 'active' : '' }}" aria-current="page" href="{{ route('litigants.index') }}">
                             <span class="item-name">Đương Sự</span>
                         </a>
                     </li>
