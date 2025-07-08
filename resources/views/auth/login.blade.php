@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Phần Mềm Quản Lý CSDL Công Chứng, Chứng Thực & Hỗ Trợ Nghiệp Vụ Công Chứng, Chứng Thực</title>
+    <title>VPCC</title>
 
     <!-- Favicon -->
     <link rel="shortcut icon" href="{{ asset('assets/images/favicon.ico') }}" />

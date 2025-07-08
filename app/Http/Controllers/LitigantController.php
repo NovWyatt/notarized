@@ -235,46 +235,46 @@ class LitigantController extends Controller
     private function getIndividualValidationRules()
     {
         return [
-            'birth_date'                     => 'nullable|date',
-            'gender'                         => 'nullable|in:' . implode(',', array_keys(IndividualLitigant::GENDERS)),
-            'nationality'                    => 'nullable|string|max:255',
-            'phone_number'                   => 'nullable|string|max:20',
-            'email'                          => 'nullable|email|max:255',
-            'status'                         => 'nullable|in:' . implode(',', array_keys(IndividualLitigant::STATUSES)),
-            'marital_status'                 => 'nullable|in:' . implode(',', array_keys(IndividualLitigant::MARITAL_STATUSES)),
-            'marriage_certificate_number'    => 'nullable|string|max:255',
-            'marriage_certificate_date'      => 'nullable|date',
-            'marriage_certificate_issued_by' => 'nullable|string|max:255',
-            'marriage_notes'                 => 'nullable|string',
+            'birth_date'                           => 'nullable|date',
+            'gender'                               => 'nullable|in:' . implode(',', array_keys(IndividualLitigant::GENDERS)),
+            'nationality'                          => 'nullable|string|max:255',
+            'phone_number'                         => 'nullable|string|max:20',
+            'email'                                => 'nullable|email|max:255',
+            'status'                               => 'nullable|in:' . implode(',', array_keys(IndividualLitigant::STATUSES)),
+            'marital_status'                       => 'nullable|in:' . implode(',', array_keys(IndividualLitigant::MARITAL_STATUSES)),
+            'marriage_certificate_number'          => 'nullable|string|max:255',
+            'marriage_certificate_date'            => 'nullable|date',
+            'marriage_certificate_issued_by'       => 'nullable|string|max:255',
+            'marriage_notes'                       => 'nullable|string',
 
             // giấy tờ tùy thân
-            'identity_documents' => 'nullable|array',
-            'identity_documents.*.document_type' => 'nullable|in:cccd,cmnd,passport,officer_id,student_card',
+            'identity_documents'                   => 'nullable|array',
+            'identity_documents.*.document_type'   => 'nullable|in:cccd,cmnd,passport,officer_id,student_card',
             'identity_documents.*.document_number' => 'nullable|string|max:255',
-            'identity_documents.*.issue_date' => 'nullable|date',
-            'identity_documents.*.issued_by' => 'nullable|string|max:255',
-            'identity_documents.*.school_name' => 'nullable|string|max:255',
-            'identity_documents.*.academic_year' => 'nullable|string|max:255',
+            'identity_documents.*.issue_date'      => 'nullable|date',
+            'identity_documents.*.issued_by'       => 'nullable|string|max:255',
+            'identity_documents.*.school_name'     => 'nullable|string|max:255',
+            'identity_documents.*.academic_year'   => 'nullable|string|max:255',
 
             // Địa chỉ thường trú
-            'permanent_street_address'       => 'nullable|string|max:255',
-            'permanent_province'             => 'nullable|string|max:255',
-            'permanent_district'             => 'nullable|string|max:255',
-            'permanent_ward'                 => 'nullable|string|max:255',
+            'permanent_street_address'             => 'nullable|string|max:255',
+            'permanent_province'                   => 'nullable|string|max:255',
+            'permanent_district'                   => 'nullable|string|max:255',
+            'permanent_ward'                       => 'nullable|string|max:255',
 
             // Địa chỉ tạm trú
-            'temporary_street_address'       => 'nullable|string|max:255',
-            'temporary_province'             => 'nullable|string|max:255',
-            'temporary_district'             => 'nullable|string|max:255',
-            'temporary_ward'                 => 'nullable|string|max:255',
+            'temporary_street_address'             => 'nullable|string|max:255',
+            'temporary_province'                   => 'nullable|string|max:255',
+            'temporary_district'                   => 'nullable|string|max:255',
+            'temporary_ward'                       => 'nullable|string|max:255',
 
             // Thông tin kết hôn
-            'same_household'                 => 'nullable|boolean',
-            'spouse_id'                      => 'nullable|exists:litigants,id',
-            'marriage_registration_number'   => 'nullable|string|max:255',
-            'marriage_issue_date'            => 'nullable|date',
-            'marriage_issued_by'             => 'nullable|string|max:255',
-            'is_divorced'                    => 'nullable|boolean',
+            'same_household'                       => 'nullable|boolean',
+            'spouse_id'                            => 'nullable|exists:litigants,id',
+            'marriage_registration_number'         => 'nullable|string|max:255',
+            'marriage_issue_date'                  => 'nullable|date',
+            'marriage_issued_by'                   => 'nullable|string|max:255',
+            'is_divorced'                          => 'nullable|boolean',
         ];
     }
 
@@ -776,5 +776,40 @@ class LitigantController extends Controller
             // Xóa tất cả địa chỉ cũ
             $litigant->addresses()->delete();
         }
+    }
+
+    //search litigants
+    public function searchLitigants(Request $request)
+    {
+        $query = $request->get('q');
+
+        if (! $query || strlen($query) < 2) {
+            return response()->json([]);
+        }
+
+        $litigants = Litigant::with(['individualLitigant.identityDocuments'])
+            ->where('type', 'individual') // Chỉ cá nhân mới có thể làm vợ/chồng
+            ->where(function ($queryBuilder) use ($query) {
+                $queryBuilder->where('full_name', 'like', '%' . $query . '%');
+            })
+            ->orWhereHas('individualLitigant.identityDocuments', function ($queryBuilder) use ($query) {
+                $queryBuilder->where('document_number', 'like', '%' . $query . '%');
+            })
+            ->limit(10)
+            ->get();
+
+        return response()->json($litigants->map(function ($litigant) {
+            return [
+                'id'                 => $litigant->id,
+                'full_name'          => $litigant->full_name,
+                'type'               => $litigant->type,
+                'identity_documents' => $litigant->individualLitigant?->identityDocuments?->map(function ($doc) {
+                    return [
+                        'document_type'   => $doc->document_type,
+                        'document_number' => $doc->document_number,
+                    ];
+                }) ?? [],
+            ];
+        }));
     }
 }

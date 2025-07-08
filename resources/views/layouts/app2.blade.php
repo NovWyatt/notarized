@@ -4,10 +4,10 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Phần Mềm Quản Lý CSDL Công Chứng, Chứng Thực & Hỗ Trợ Nghiệp Vụ Công Chứng, Chứng Thực.</title>
+    <title>VPCC</title>
 
     <!-- Favicon -->
-    <link rel="shortcut icon" href="{{ asset('assets/images/favicon.ico') }}" />
+    {{-- <link rel="shortcut icon" href="{{ asset('assets/images/favicon.ico') }}" /> --}}
 
     <!-- Library / Plugin Css Build -->
     <link rel="stylesheet" href="{{ asset('assets/css/core/libs.min.css') }}" />
@@ -32,7 +32,74 @@
 
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <style>
+        /* Thêm vào file CSS */
+        .search-container {
+            position: relative;
+        }
 
+        .search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 0.375rem;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1050;
+            display: none;
+        }
+
+        .search-result-item {
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            border-bottom: 1px solid #f8f9fa;
+        }
+
+        .search-result-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .search-result-name {
+            font-weight: 500;
+        }
+
+        .search-result-type {
+            font-size: 0.875rem;
+            color: #6c757d;
+        }
+
+        .search-result-documents {
+            font-size: 0.75rem;
+            color: #6c757d;
+            margin-top: 0.25rem;
+        }
+
+        .selected-litigant {
+            background-color: #e3f2fd;
+            border: 1px solid #2196f3;
+        }
+
+        .clear-selection {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #6c757d;
+            cursor: pointer;
+        }
+
+        .no-results {
+            padding: 1rem;
+            text-align: center;
+            color: #6c757d;
+            font-style: italic;
+        }
+    </style>
 </head>
 
 <body class="  ">
@@ -97,7 +164,8 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {{ request()->is('litigants*') ? 'active' : '' }}" aria-current="page" href="{{ route('litigants.index') }}">
+                        <a class="nav-link {{ request()->is('litigants*') ? 'active' : '' }}" aria-current="page"
+                            href="{{ route('litigants.index') }}">
                             <span class="item-name">Đương Sự</span>
                         </a>
                     </li>

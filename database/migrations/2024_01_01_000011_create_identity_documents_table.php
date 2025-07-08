@@ -13,19 +13,18 @@ class CreateIdentityDocumentsTable extends Migration
     {
         Schema::create('identity_documents', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('individual_litigant_id')->constrained('individual_litigants')->onDelete('cascade');
+            $table->unsignedBigInteger('individual_litigant_id');
             $table->enum('document_type', ['cccd', 'cmnd', 'passport', 'officer_id', 'student_card']);
             $table->string('document_number')->nullable();
             $table->date('issue_date')->nullable();
             $table->string('issued_by')->nullable();
-            // Thêm trường đặc biệt cho thẻ học sinh
-            $table->string('school_name')->nullable(); // Tên trường học
-            $table->string('academic_year')->nullable(); // Niên khóa
+            $table->string('school_name')->nullable();
+            $table->string('academic_year')->nullable();
             $table->timestamps();
 
-            $table->index('individual_litigant_id', 'identity_docs_individual_idx');
-            $table->index('document_type', 'identity_docs_type_idx');
+            $table->index('document_type', 'identity_docs_type_idx'); // vẫn giữ index này được
         });
+
     }
 
     public function down()

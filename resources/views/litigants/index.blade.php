@@ -274,7 +274,7 @@
                                     <td class="px-4 py-3">
                                         <div>
                                             <small class="text-muted">
-                                                {{ $litigant->updated_at->format('M d, Y') }}
+                                                {{ $litigant->updated_at->format(' d/m/Y') }}
                                             </small>
                                             <br>
                                             <small class="text-muted">

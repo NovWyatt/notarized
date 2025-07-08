@@ -54,17 +54,6 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-floating mb-3">
-                                <input type="text" class="form-control @error('full_name') is-invalid @enderror"
-                                    id="full_name" name="full_name" placeholder="Full Name" value="{{ old('full_name') }}"
-                                    required>
-                                <label for="full_name">Tên đương sự <span class="text-danger">*</span></label>
-                                @error('full_name')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-floating mb-3">
                                 <select class="form-select @error('type') is-invalid @enderror" id="type"
                                     name="type" required onchange="toggleSections()">
                                     <option value="">Loại</option>
@@ -78,6 +67,17 @@
                                 </select>
                                 <label for="type">Loại <span class="text-danger">*</span></label>
                                 @error('type')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-floating mb-3">
+                                <input type="text" class="form-control @error('full_name') is-invalid @enderror"
+                                    id="full_name" name="full_name" placeholder="Full Name" value="{{ old('full_name') }}"
+                                    required>
+                                <label for="full_name">Tên đương sự <span class="text-danger">*</span></label>
+                                @error('full_name')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
@@ -110,9 +110,13 @@
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="form-floating mb-3">
-                                    <input type="date" class="form-control @error('birth_date') is-invalid @enderror"
-                                        id="birth_date" name="birth_date" value="{{ old('birth_date') }}">
-                                    <label for="birth_date">Ngày sinh</label>
+                                    <input type="text" class="form-control @error('birth_date') is-invalid @enderror"
+                                        id="birth_date" name="birth_date_display" placeholder="ddmmyyyy" maxlength="10"
+                                        value="{{ old('birth_date_display', isset($individualLitigant) ? $individualLitigant->birth_date?->format('d/m/Y') : '') }}">
+                                    <label for="birth_date">Ngày sinh (dd/mm/yyy)</label>
+                                    <!-- Hidden input để gửi data đúng format cho server -->
+                                    <input type="hidden" id="birth_date_formatted" name="birth_date"
+                                        value="{{ old('birth_date', isset($individualLitigant) ? $individualLitigant->birth_date?->format('Y-m-d') : '') }}">
                                     @error('birth_date')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -205,7 +209,7 @@
                                     @enderror
                                 </div>
                             </div>
-                            <div class="col-md-4">
+                            {{-- <div class="col-md-4">
                                 <div class="form-floating mb-3">
                                     <input type="text"
                                         class="form-control @error('marriage_certificate_number') is-invalid @enderror"
@@ -229,7 +233,7 @@
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
-                            </div>
+                            </div> --}}
                         </div>
                     </div>
                 </div>
@@ -284,9 +288,14 @@
                                         <div class="row">
                                             <div class="col-md-6">
                                                 <div class="form-floating mb-3">
-                                                    <input type="date" class="form-control"
+                                                    <input type="text" class="form-control" id="issue_date_0"
+                                                        name="identity_documents[0][issue_date_display]"
+                                                        placeholder="ddmmyyyy" maxlength="10">
+                                                    <label>Ngày cấp (dd/mm/yyy)</label>
+                                                    <!-- Hidden input để gửi data đúng format cho server -->
+                                                    <input type="hidden" id="issue_date_formatted_0"
                                                         name="identity_documents[0][issue_date]">
-                                                    <label>Ngày cấp</label>
+                                                    <div class="invalid-feedback" id="issue_date_error_0"></div>
                                                 </div>
                                             </div>
                                             <div class="col-md-6">
@@ -496,16 +505,23 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-floating mb-3">
-                                    <select class="form-select" id="spouse_id" name="spouse_id">
-                                        <option value="">Chọn vợ/chồng</option>
-                                        @foreach ($availableLitigants as $litigant)
-                                            <option value="{{ $litigant->id }}"
-                                                {{ old('spouse_id') == $litigant->id ? 'selected' : '' }}>
-                                                {{ $litigant->full_name }} ({{ ucfirst($litigant->type) }})
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                    <label for="spouse_id">vợ-chồng</label>
+                                    <div class="search-container">
+                                        <input type="text"
+                                            class="form-control @error('spouse_id') is-invalid @enderror"
+                                            id="spouse_search" placeholder="Tìm theo tên hoặc số giấy tờ..."
+                                            autocomplete="off" value="{{ old('spouse_search') }}">
+                                        <button type="button" class="clear-selection d-none"
+                                            onclick="clearSpouseSelection()">
+                                            <i class="fas fa-times"></i> ×
+                                        </button>
+                                        <div class="search-results" id="spouseSearchResults"></div>
+                                    </div>
+                                    <!-- Hidden input để gửi ID -->
+                                    <input type="hidden" id="spouse_id" name="spouse_id"
+                                        value="{{ old('spouse_id') }}">
+                                    @error('spouse_id')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -520,9 +536,19 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-floating mb-3">
-                                    <input type="date" class="form-control" id="marriage_issue_date"
-                                        name="marriage_issue_date" value="{{ old('marriage_issue_date') }}">
-                                    <label for="marriage_issue_date">Ngày đăng ký giấy kết hôn</label>
+                                    <input type="text"
+                                        class="form-control @error('marriage_issue_date') is-invalid @enderror"
+                                        id="marriage_issue_date" name="marriage_issue_date_display"
+                                        placeholder="ddmmyyyy" maxlength="10"
+                                        value="{{ old('marriage_issue_date_display') }}">
+                                    <label for="marriage_issue_date">Ngày đăng ký giấy kết hôn (dd/mm/yy)</label>
+                                    <!-- Hidden input để gửi data đúng format cho server -->
+                                    <input type="hidden" id="marriage_issue_date_formatted" name="marriage_issue_date"
+                                        value="{{ old('marriage_issue_date') }}">
+                                    @error('marriage_issue_date')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                    <div class="invalid-feedback" id="marriage_issue_date_error"></div>
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -599,10 +625,20 @@
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="form-floating mb-3">
-                                    <input type="date" class="form-control" id="business_registration_date"
+                                    <input type="text"
+                                        class="form-control @error('business_registration_date') is-invalid @enderror"
+                                        id="business_registration_date" name="business_registration_date_display"
+                                        placeholder="ddmmyyyy" maxlength="10"
+                                        value="{{ old('business_registration_date_display') }}">
+                                    <label for="business_registration_date">Ngày đăng ký tổ chức (dd/mm/yyyy)</label>
+                                    <!-- Hidden input để gửi data đúng format cho server -->
+                                    <input type="hidden" id="business_registration_date_formatted"
                                         name="business_registration_date"
                                         value="{{ old('business_registration_date') }}">
-                                    <label for="business_registration_date">Ngày đăng ký tổ chức</label>
+                                    @error('business_registration_date')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                    <div class="invalid-feedback" id="business_registration_date_error"></div>
                                 </div>
                             </div>
                             <div class="col-md-4">
@@ -614,7 +650,7 @@
 
                                 </div>
                             </div>
-                            <div class="col-md-4">
+                            {{-- <div class="col-md-4">
                                 <div class="form-floating mb-3">
                                     <select class="form-select" id="representative_id" name="representative_id">
                                         <option value="">Chọn người đại diện</option>
@@ -627,9 +663,9 @@
                                     </select>
                                     <label for="representative_id">Tiêu biểu</label>
                                 </div>
-                            </div>
+                            </div> --}}
                         </div>
-                        <div class="row">
+                        {{-- <div class="row">
                             <div class="col-md-12">
                                 <div class="form-floating mb-3">
                                     <input type="text" class="form-control" id="representative_position"
@@ -638,7 +674,7 @@
                                     <label for="representative_position">Chức vụ người đại diện</label>
                                 </div>
                             </div>
-                        </div>
+                        </div> --}}
                     </div>
                 </div>
 
@@ -747,9 +783,19 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-floating mb-3">
-                                    <input type="date" class="form-control" id="change_registration_date"
+                                    <input type="text"
+                                        class="form-control @error('change_registration_date') is-invalid @enderror"
+                                        id="change_registration_date" name="change_registration_date_display"
+                                        placeholder="ddmmyyyy" maxlength="10"
+                                        value="{{ old('change_registration_date_display') }}">
+                                    <label for="change_registration_date">Thay đổi ngày đăng ký (dd/mm/yyyy)</label>
+                                    <!-- Hidden input để gửi data đúng format cho server -->
+                                    <input type="hidden" id="change_registration_date_formatted"
                                         name="change_registration_date" value="{{ old('change_registration_date') }}">
-                                    <label for="change_registration_date">Thay đổi ngày đăng ký</label>
+                                    @error('change_registration_date')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                    <div class="invalid-feedback" id="change_registration_date_error"></div>
                                 </div>
                             </div>
                         </div>
@@ -767,17 +813,27 @@
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="form-floating mb-3">
-                                    <select class="form-select" id="registration_representative_id"
-                                        name="registration_representative_id">
-                                        <option value="">Chọn người đại diện</option>
-                                        @foreach ($availableLitigants as $litigant)
-                                            <option value="{{ $litigant->id }}"
-                                                {{ old('registration_representative_id') == $litigant->id ? 'selected' : '' }}>
-                                                {{ $litigant->full_name }} ({{ ucfirst($litigant->type) }})
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                    <label for="registration_representative_id">Đại diện đăng ký</label>
+                                    <div class="search-container">
+                                        <input type="text"
+                                            class="form-control @error('registration_representative_id') is-invalid @enderror"
+                                            id="registration_representative_search"
+                                            placeholder="Tìm theo tên hoặc số giấy tờ..." autocomplete="off"
+                                            value="{{ old('registration_representative_search') }}">
+                                        <button type="button" class="clear-selection d-none"
+                                            onclick="clearRegistrationRepresentativeSelection()">
+                                            <i class="fas fa-times"></i> ×
+                                        </button>
+                                        <div class="search-results" id="registrationRepresentativeSearchResults"></div>
+                                    </div>
+                                    {{-- <label for="registration_representative_search">Đại diện đăng ký (Tìm theo tên hoặc số
+                                        giấy tờ)</label> --}}
+                                    <!-- Hidden input để gửi ID -->
+                                    <input type="hidden" id="registration_representative_id"
+                                        name="registration_representative_id"
+                                        value="{{ old('registration_representative_id') }}">
+                                    @error('registration_representative_id')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
                             </div>
                             <div class="col-md-4">
@@ -864,10 +920,20 @@
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="form-floating mb-3">
-                                    <input type="date" class="form-control" id="ci_business_registration_date"
+                                    <input type="text"
+                                        class="form-control @error('ci_business_registration_date') is-invalid @enderror"
+                                        id="ci_business_registration_date" name="ci_business_registration_date_display"
+                                        placeholder="ddmmyyyy" maxlength="10"
+                                        value="{{ old('ci_business_registration_date_display') }}">
+                                    <label for="ci_business_registration_date">Ngày đăng ký kinh doanh (dd/mm/yyyy)</label>
+                                    <!-- Hidden input để gửi data đúng format cho server -->
+                                    <input type="hidden" id="ci_business_registration_date_formatted"
                                         name="ci_business_registration_date"
                                         value="{{ old('ci_business_registration_date') }}">
-                                    <label for="ci_business_registration_date">Ngày đăng ký kinh doanh</label>
+                                    @error('ci_business_registration_date')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                    <div class="invalid-feedback" id="ci_business_registration_date_error"></div>
                                 </div>
                             </div>
                             <div class="col-md-4">
@@ -878,7 +944,7 @@
                                     <label for="ci_issuing_authority">Cơ quan phát hành</label>
                                 </div>
                             </div>
-                            <div class="col-md-4">
+                            {{-- <div class="col-md-4">
                                 <div class="form-floating mb-3">
                                     <select class="form-select" id="ci_representative_id" name="ci_representative_id">
                                         <option value="">Chọn người địa diện</option>
@@ -891,9 +957,9 @@
                                     </select>
                                     <label for="ci_representative_id">Tiêu biểu</label>
                                 </div>
-                            </div>
+                            </div> --}}
                         </div>
-                        <div class="row">
+                        {{-- <div class="row">
                             <div class="col-md-12">
                                 <div class="form-floating mb-3">
                                     <input type="text" class="form-control" id="ci_representative_position"
@@ -902,7 +968,7 @@
                                     <label for="ci_representative_position">Chức vụ người đại diện</label>
                                 </div>
                             </div>
-                        </div>
+                        </div> --}}
                     </div>
                 </div>
 
@@ -1012,10 +1078,20 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-floating mb-3">
-                                    <input type="date" class="form-control" id="ci_change_registration_date"
+                                    <input type="text"
+                                        class="form-control @error('ci_change_registration_date') is-invalid @enderror"
+                                        id="ci_change_registration_date" name="ci_change_registration_date_display"
+                                        placeholder="ddmmyyyy" maxlength="10"
+                                        value="{{ old('ci_change_registration_date_display') }}">
+                                    <label for="ci_change_registration_date">Thay đổi ngày đăng ký (dd/mm/yyyy)</label>
+                                    <!-- Hidden input để gửi data đúng format cho server -->
+                                    <input type="hidden" id="ci_change_registration_date_formatted"
                                         name="ci_change_registration_date"
                                         value="{{ old('ci_change_registration_date') }}">
-                                    <label for="ci_change_registration_date">Thay đổi ngày đăng ký</label>
+                                    @error('ci_change_registration_date')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                    <div class="invalid-feedback" id="ci_change_registration_date_error"></div>
                                 </div>
                             </div>
                         </div>
@@ -1033,17 +1109,26 @@
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="form-floating mb-3">
-                                    <select class="form-select" id="ci_registration_representative_id"
-                                        name="ci_registration_representative_id">
-                                        <option value="">Chọn người đại diện</option>
-                                        @foreach ($availableLitigants as $litigant)
-                                            <option value="{{ $litigant->id }}"
-                                                {{ old('ci_registration_representative_id') == $litigant->id ? 'selected' : '' }}>
-                                                {{ $litigant->full_name }} ({{ ucfirst($litigant->type) }})
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                    <label for="ci_registration_representative_id">Tiêu biểu</label>
+                                    <div class="search-container">
+                                        <input type="text"
+                                            class="form-control @error('ci_registration_representative_id') is-invalid @enderror"
+                                            id="ci_registration_representative_search"
+                                            placeholder="Tìm theo tên hoặc số giấy tờ..." autocomplete="off"
+                                            value="{{ old('ci_registration_representative_search') }}">
+                                        <button type="button" class="clear-selection d-none"
+                                            onclick="clearCiRegistrationRepresentativeSelection()">
+                                            <i class="fas fa-times"></i> ×
+                                        </button>
+                                        <div class="search-results" id="ciRegistrationRepresentativeSearchResults"></div>
+                                    </div>
+                                    {{-- <label for="ci_registration_representative_search">Tiêu biểu (Tìm theo tên hoặc số giấy tờ)</label> --}}
+                                    <!-- Hidden input để gửi ID -->
+                                    <input type="hidden" id="ci_registration_representative_id"
+                                        name="ci_registration_representative_id"
+                                        value="{{ old('ci_registration_representative_id') }}">
+                                    @error('ci_registration_representative_id')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
                             </div>
                             <div class="col-md-4">
@@ -1086,6 +1171,7 @@
             </div>
         </form>
     </div>
-    <script src="{{ asset('js/litigant-common.js') }}"></script>
-    <script src="{{ asset('js/litigant-form.js') }}"></script>
+    <script src="{{ asset('js/litigant-common.js') }}?v={{ time() }}"></script>
+    <script src="{{ asset('js/litigant-form.js') }}?v={{ time() }}"></script>
+    <script src="{{ asset('js/litigant-date.js') }}?v={{ time() }}"></script>
 @endsection
