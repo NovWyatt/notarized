@@ -102,7 +102,7 @@
                         </div>
                     </div>
                     <div class="sign-bg">
-                        <img src="{{ asset('company_logo.png') }}" alt="Logo" class="icon-100" />
+                        <img src="{{ asset('company_logo.png') }}" alt="Logo" class="icon-40" />
 
                     </div>
                 </div>
