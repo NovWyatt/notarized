@@ -1003,9 +1003,9 @@
                         <a href="{{ route('litigants.edit', $litigant) }}" class="btn btn-warning me-2">
                             <i class="fas fa-edit me-2"></i>Chỉnh sửa
                         </a>
-                        <button type="button" class="btn btn-danger" onclick="confirmDelete()">
+                        {{-- <button type="button" class="btn btn-danger" onclick="confirmDelete()">
                             <i class="fas fa-trash me-2"></i>Xóa
-                        </button>
+                        </button> --}}
                     </div>
                 </div>
             </div>

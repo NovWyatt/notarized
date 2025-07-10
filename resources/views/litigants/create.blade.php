@@ -409,7 +409,7 @@
                                             <div class="col-12">
                                                 <button type="button" class="btn btn-outline-info btn-sm"
                                                     onclick="copyPermanentAddress()">
-                                                    <i class="fas fa-copy me-2"></i> Sao chép vào địa chỉ tạm thời
+                                                    <i class="fas fa-copy me-2"></i> Sao chép vào địa chỉ tạm trú
                                                 </button>
                                             </div>
                                         </div>
@@ -423,7 +423,7 @@
                                     <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
                                         data-bs-target="#temporaryAddress" aria-expanded="false"
                                         aria-controls="temporaryAddress">
-                                        <i class="fas fa-map-pin me-2"></i>Địa chỉ tạm thời
+                                        <i class="fas fa-map-pin me-2"></i>Địa chỉ tạm trú
                                     </button>
                                 </h4>
                                 <div id="temporaryAddress" class="accordion-collapse collapse"
@@ -512,7 +512,7 @@
                                             autocomplete="off" value="{{ old('spouse_search') }}">
                                         <button type="button" class="clear-selection d-none"
                                             onclick="clearSpouseSelection()">
-                                            <i class="fas fa-times"></i> ×
+                                            <i class="fas fa-times"></i>
                                         </button>
                                         <div class="search-results" id="spouseSearchResults"></div>
                                     </div>
@@ -821,7 +821,7 @@
                                             value="{{ old('registration_representative_search') }}">
                                         <button type="button" class="clear-selection d-none"
                                             onclick="clearRegistrationRepresentativeSelection()">
-                                            <i class="fas fa-times"></i> ×
+                                            <i class="fas fa-times"></i>
                                         </button>
                                         <div class="search-results" id="registrationRepresentativeSearchResults"></div>
                                     </div>
@@ -1117,7 +1117,7 @@
                                             value="{{ old('ci_registration_representative_search') }}">
                                         <button type="button" class="clear-selection d-none"
                                             onclick="clearCiRegistrationRepresentativeSelection()">
-                                            <i class="fas fa-times"></i> ×
+                                            <i class="fas fa-times"></i>
                                         </button>
                                         <div class="search-results" id="ciRegistrationRepresentativeSearchResults"></div>
                                     </div>

@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>VPCC</title>
+    <title>Phần mềm hỗ trợ công chứng - VPCC Nguyễn Thị Như Trang</title>
 
     <!-- Favicon -->
     {{-- <link rel="shortcut icon" href="{{ asset('assets/images/favicon.ico') }}" /> --}}
@@ -29,6 +29,9 @@
 
     <!-- RTL Css -->
     <link rel="stylesheet" href="{{ asset('assets/css/rtl.min.css') }}" />
+
+    <!--Custom Css-->
+    <link rel="stylesheet" href="{{ asset('css/custom.css') }}?v={{ time() }}">
 
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -241,8 +244,11 @@
                                     <img src="{{ asset('company_logo.png') }}" alt="User-Profile"
                                         class="theme-color-default-img img-fluid avatar avatar-50 avatar-rounded">
                                     <div class="caption ms-3 d-none d-md-block ">
-                                        <h6 class="mb-0 caption-title">Austin Robertson</h6>
-                                        <p class="mb-0 caption-sub-title">Marketing Administrator</p>
+                                        @auth
+                                            <h6 class="mb-0 caption-title">{{ Auth::user()->name }}</h6>
+                                            <p class="mb-0 caption-sub-title">{{ Auth::user()->getRoleNames()->first() }}
+                                            </p>
+                                        @endauth
                                     </div>
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">

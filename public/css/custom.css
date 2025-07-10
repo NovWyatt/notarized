@@ -1,0 +1,15 @@
+.card-body {
+    color: black !important;
+}
+
+.sidebar-base .nav-item .nav-link:not(.disabled){
+    color: black !important;
+}
+
+.form-select {
+    color: black !important;
+}
+
+.form-control {
+    color: black !important;
+}

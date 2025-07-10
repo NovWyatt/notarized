@@ -91,7 +91,7 @@
         </div>
 
         <!-- Stats Cards -->
-        <div class="row mb-4">
+        {{-- <div class="row mb-4">
             <div class="col-md-3">
                 <div class="card bg-primary text-white">
                     <div class="card-body">
@@ -152,7 +152,7 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div> --}}
 
         <!-- Main Table -->
         <div class="card">
@@ -172,12 +172,6 @@
                             <tr>
                                 <th scope="col" class="px-4 py-3">
                                     <div class="d-flex align-items-center">
-                                        <i class="fas fa-hashtag me-2 text-muted"></i>
-                                        ID
-                                    </div>
-                                </th>
-                                <th scope="col" class="px-4 py-3">
-                                    <div class="d-flex align-items-center">
                                         <i class="fas fa-user me-2 text-muted"></i>
                                         Tên đương sự
                                     </div>
@@ -191,7 +185,7 @@
                                 <th scope="col" class="px-4 py-3">
                                     <div class="d-flex align-items-center">
                                         <i class="fas fa-user-tie me-2 text-muted"></i>
-                                        Tạo bởi
+                                        Người tạo
                                     </div>
                                 </th>
                                 <th scope="col" class="px-4 py-3">
@@ -215,9 +209,6 @@
                         <tbody>
                             @forelse($litigants as $litigant)
                                 <tr>
-                                    <td class="px-4 py-3">
-                                        <span class="badge bg-light text-dark">{{ $litigant->id }}</span>
-                                    </td>
                                     <td class="px-4 py-3">
                                         <div class="d-flex align-items-center">
                                             <div class="avatar-sm me-3">
@@ -268,7 +259,7 @@
                                     </td>
                                     <td class="px-4 py-3">
                                         <span class="badge bg-light text-dark">
-                                            {{ $litigant->user->department ?? 'Not Assigned' }}
+                                            {{ $litigant->user->department ?? 'Chưa có' }}
                                         </span>
                                     </td>
                                     <td class="px-4 py-3">
@@ -292,10 +283,10 @@
                                                 class="btn btn-sm btn-outline-secondary" title="Edit">
                                                 <i class="fas fa-edit"></i>
                                             </a>
-                                            <button type="button" class="btn btn-sm btn-outline-danger" title="Delete"
+                                            {{-- <button type="button" class="btn btn-sm btn-outline-danger" title="Delete"
                                                 onclick="confirmDelete({{ $litigant->id }})">
                                                 <i class="fas fa-trash"></i>
-                                            </button>
+                                            </button> --}}
                                         </div>
                                     </td>
                                 </tr>
