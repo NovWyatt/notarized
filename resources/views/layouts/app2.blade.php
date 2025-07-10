@@ -5,9 +5,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>Phần mềm hỗ trợ công chứng - VPCC Nguyễn Thị Như Trang</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <!-- Favicon -->
-    {{-- <link rel="shortcut icon" href="{{ asset('assets/images/favicon.ico') }}" /> --}}
+    <link rel="shortcut icon" href="{{ asset('assets/images/favicon.ico') }}" />
 
     <!-- Library / Plugin Css Build -->
     <link rel="stylesheet" href="{{ asset('assets/css/core/libs.min.css') }}" />
