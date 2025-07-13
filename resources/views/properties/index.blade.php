@@ -1,5 +1,25 @@
 {{-- resources/views/properties/index.blade.php --}}
 @extends('layouts.app2')
+
+<style>
+    .asset-checkbox {
+        cursor: pointer;
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: rgba(0, 0, 0, .05);
+    }
+
+    .btn-group-sm .btn {
+        padding: 0.25rem 0.5rem;
+    }
+
+    .spinner-border-sm {
+        width: 1rem;
+        height: 1rem;
+    }
+</style>
+
 @section('content')
     <div class="container-fluid p-3">
         <!-- Page Header -->
@@ -155,43 +175,9 @@
                                                     class="btn btn-outline-warning" title="Sửa">
                                                     <i class="fas fa-edit"></i>
                                                 </a>
-                                                {{-- <button type="button" class="btn btn-outline-danger" title="Xóa"
-                                                    data-bs-toggle="modal"
-                                                    data-bs-target="#deleteModal{{ $asset->id }}">
-                                                    <i class="fas fa-trash"></i>
-                                                </button> --}}
                                             </div>
                                         </td>
                                     </tr>
-
-                                    <!-- Delete Modal -->
-                                    <div class="modal fade" id="deleteModal{{ $asset->id }}" tabindex="-1">
-                                        <div class="modal-dialog">
-                                            <div class="modal-content">
-                                                <div class="modal-header">
-                                                    <h5 class="modal-title">Xác nhận xóa</h5>
-                                                    <button type="button" class="btn-close"
-                                                        data-bs-dismiss="modal"></button>
-                                                </div>
-                                                <div class="modal-body">
-                                                    Bạn có chắc chắn muốn xóa tài sản
-                                                    <strong>{{ $asset->asset_name ?: 'Tài sản #' . $asset->id }}</strong>?
-                                                    <br><small class="text-muted">Hành động này không thể hoàn tác.</small>
-                                                </div>
-                                                <div class="modal-footer">
-                                                    <button type="button" class="btn btn-secondary"
-                                                        data-bs-dismiss="modal">Hủy</button>
-                                                    <form method="POST"
-                                                        action="{{ route('properties.destroy', $asset) }}"
-                                                        class="d-inline">
-                                                        @csrf
-                                                        @method('DELETE')
-                                                        <button type="submit" class="btn btn-danger">Xóa</button>
-                                                    </form>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
                                 @endforeach
                             </tbody>
                         </table>
@@ -254,63 +240,10 @@
         </div>
     </div>
 
+    <script src="{{ asset('js/assets-common.js') }}?v={{ time() }}"></script>
     <script>
-        // Handle select all checkboxes
-        document.getElementById('select-all').addEventListener('change', function() {
-            const checkboxes = document.querySelectorAll('.asset-checkbox');
-            checkboxes.forEach(checkbox => checkbox.checked = this.checked);
-            toggleBulkDelete();
-        });
-
-        document.getElementById('select-all-header').addEventListener('change', function() {
-            const checkboxes = document.querySelectorAll('.asset-checkbox');
-            checkboxes.forEach(checkbox => checkbox.checked = this.checked);
-            toggleBulkDelete();
-        });
-
-        // Handle individual checkboxes
-        document.querySelectorAll('.asset-checkbox').forEach(checkbox => {
-            checkbox.addEventListener('change', toggleBulkDelete);
-        });
-
-        function toggleBulkDelete() {
-            const checkedBoxes = document.querySelectorAll('.asset-checkbox:checked');
-            const bulkDeleteBtn = document.getElementById('bulk-delete');
-
-            if (checkedBoxes.length > 0) {
-                bulkDeleteBtn.style.display = 'block';
-            } else {
-                bulkDeleteBtn.style.display = 'none';
-            }
-        }
-
-        // Handle bulk delete
-        document.getElementById('bulk-delete').addEventListener('click', function() {
-            const checkedBoxes = document.querySelectorAll('.asset-checkbox:checked');
-            if (checkedBoxes.length === 0) return;
-
-            if (confirm(`Bạn có chắc chắn muốn xóa ${checkedBoxes.length} tài sản đã chọn?`)) {
-                const assetIds = Array.from(checkedBoxes).map(cb => cb.value);
-
-                fetch('{{ route('properties.bulk-delete') }}', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                        },
-                        body: JSON.stringify({
-                            asset_ids: assetIds
-                        })
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            location.reload();
-                        } else {
-                            alert('Có lỗi xảy ra: ' + data.message);
-                        }
-                    });
-            }
-        });
+        // Set configuration for index page
+        AssetManager.config.routes.bulkDelete = '{{ route('properties.bulk-delete') }}';
     </script>
+    <script src="{{ asset('js/assets-index.js') }}?v={{ time() }}"></script>
 @endsection
