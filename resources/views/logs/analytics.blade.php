@@ -114,9 +114,9 @@
                                         <td>{{ $session->login_at->diffForHumans() }}</td>
                                         <td>
                                             @if ($session->is_active)
-                                                <span class="badge badge-success">Active</span>
+                                                <span class=" badge-success">Active</span>
                                             @else
-                                                <span class="badge badge-danger">Inactive</span>
+                                                <span class=" badge-danger">Inactive</span>
                                             @endif
                                         </td>
                                     </tr>
