@@ -1,7 +1,7 @@
 <?php
-
 namespace App\Providers;
 
+use App\Services\LocationService;
 use App\Services\SessionService;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
@@ -17,6 +17,9 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->singleton(SessionService::class, function ($app) {
             return new SessionService();
+        });
+        $this->app->singleton(LocationService::class, function ($app) {
+            return new LocationService();
         });
     }
 

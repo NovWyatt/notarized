@@ -1,41 +1,51 @@
 <?php
 
-// 1. UPDATE SessionService - Thêm thông báo real-time
 namespace App\Services;
 
 use App\Models\UserSession;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Request;
+use App\Services\LocationService;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Request;
+use Illuminate\Support\Facades\Cache;
 use Jenssegers\Agent\Agent;
 
 class SessionService
 {
+    protected $locationService;
+
+    public function __construct(LocationService $locationService)
+    {
+        $this->locationService = $locationService;
+    }
+
     public function createSession($user)
     {
-        $agent     = new Agent();
+        $agent = new Agent();
         $sessionId = Session::getId();
+        $ip = Request::ip();
+
+        // Lấy location với service mới
+        $location = $this->locationService->getLocationFromIP($ip);
 
         // Lấy thông tin thiết bị hiện tại
-        $currentDevice   = $agent->device() ?: ($agent->isDesktop() ? 'Desktop' : 'Mobile');
-        $currentLocation = $this->getLocationFromIP(Request::ip());
+        $currentDevice = $agent->device() ?: ($agent->isDesktop() ? 'Desktop' : 'Mobile');
 
         // Đăng xuất tất cả session khác của user và gửi thông báo
-        $this->logoutOtherSessionsWithNotification($user->id, $sessionId, $currentDevice, $currentLocation);
+        $this->logoutOtherSessionsWithNotification($user->id, $sessionId, $currentDevice, $location);
 
         // Tạo session mới
         $session = UserSession::create([
-            'user_id'       => $user->id,
-            'session_id'    => $sessionId,
-            'ip_address'    => Request::ip(),
-            'user_agent'    => Request::userAgent(),
-            'browser'       => $agent->browser() . ' ' . $agent->version($agent->browser()),
-            'device'        => $currentDevice,
-            'platform'      => $agent->platform() . ' ' . $agent->version($agent->platform()),
-            'location'      => $currentLocation,
-            'login_at'      => now(),
+            'user_id' => $user->id,
+            'session_id' => $sessionId,
+            'ip_address' => $ip,
+            'user_agent' => Request::userAgent(),
+            'browser' => $agent->browser() . ' ' . $agent->version($agent->browser()),
+            'device' => $currentDevice,
+            'platform' => $agent->platform() . ' ' . $agent->version($agent->platform()),
+            'location' => $location,
+            'login_at' => now(),
             'last_activity' => now(),
-            'is_active'     => true,
+            'is_active' => true
         ]);
 
         return $session;
@@ -56,7 +66,7 @@ class SessionService
             // Đánh dấu session là inactive
             $session->update([
                 'logout_at' => now(),
-                'is_active' => false,
+                'is_active' => false
             ]);
         }
     }
@@ -64,12 +74,12 @@ class SessionService
     public function createLogoutNotification($sessionId, $newDevice, $newLocation)
     {
         $notification = [
-            'type'         => 'force_logout',
-            'message'      => "Tài khoản của bạn đã đăng nhập từ {$newDevice} tại {$newLocation}. Bạn sẽ được đăng xuất sau 5 giây.",
-            'new_device'   => $newDevice,
+            'type' => 'force_logout',
+            'message' => "Tài khoản của bạn đã đăng nhập từ {$newDevice} tại {$newLocation}. Bạn sẽ được đăng xuất sau 5 giây.",
+            'new_device' => $newDevice,
             'new_location' => $newLocation,
-            'countdown'    => 5,
-            'created_at'   => now()->timestamp,
+            'countdown' => 5,
+            'created_at' => now()->timestamp
         ];
 
         // Lưu thông báo vào cache với key là session_id
@@ -98,7 +108,7 @@ class SessionService
         UserSession::where('session_id', $sessionId)
             ->update([
                 'logout_at' => now(),
-                'is_active' => false,
+                'is_active' => false
             ]);
 
         $this->clearLogoutNotification($sessionId);
@@ -108,23 +118,5 @@ class SessionService
     {
         $session = UserSession::where('session_id', $sessionId)->first();
         return $session ? $session->is_active : false;
-    }
-
-    private function getLocationFromIP($ip)
-    {
-        // Sử dụng API miễn phí để lấy location
-        // Hoặc return 'Unknown' nếu không cần thiết
-        try {
-            $response = file_get_contents("http://ip-api.com/json/{$ip}");
-            $data     = json_decode($response, true);
-
-            if ($data && $data['status'] === 'active') {
-                return $data['city'] . ', ' . $data['country'] . ', ' . $data['city'] . ', ' . $data['district'];
-            }
-        } catch (\Exception $e) {
-            // Log error nếu cần
-        }
-
-        return 'Unknown';
     }
 }

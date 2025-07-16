@@ -14,9 +14,9 @@ return [
     |
     */
 
-    'mailgun' => [
-        'domain' => env('MAILGUN_DOMAIN'),
-        'secret' => env('MAILGUN_SECRET'),
+    'mailgun'  => [
+        'domain'   => env('MAILGUN_DOMAIN'),
+        'secret'   => env('MAILGUN_SECRET'),
         'endpoint' => env('MAILGUN_ENDPOINT', 'api.mailgun.net'),
     ],
 
@@ -24,10 +24,32 @@ return [
         'token' => env('POSTMARK_TOKEN'),
     ],
 
-    'ses' => [
-        'key' => env('AWS_ACCESS_KEY_ID'),
+    'ses'      => [
+        'key'    => env('AWS_ACCESS_KEY_ID'),
         'secret' => env('AWS_SECRET_ACCESS_KEY'),
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'location' => [
+        'cache_duration' => 24 * 60 * 60, // 24 hours
+        'timeout'        => 5,            // 5 seconds
+        'apis'           => [
+            'ip_api'    => [
+                'url'     => 'http://ip-api.com/json/',
+                'enabled' => true,
+            ],
+            'ipapi_co'  => [
+                'url'     => 'https://ipapi.co/',
+                'enabled' => true,
+            ],
+            'ipinfo'    => [
+                'url'     => 'https://ipinfo.io/',
+                'enabled' => true,
+            ],
+            'freeipapi' => [
+                'url'     => 'https://freeipapi.com/api/json/',
+                'enabled' => true,
+            ],
+        ],
+    ],
 ];
