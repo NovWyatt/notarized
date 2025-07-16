@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Services\SessionService;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 
@@ -14,7 +15,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        //
+        $this->app->singleton(SessionService::class, function ($app) {
+            return new SessionService();
+        });
     }
 
     /**
@@ -24,6 +27,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        Schema::defaultStringLength(191); 
+        Schema::defaultStringLength(191);
     }
 }

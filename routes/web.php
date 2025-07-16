@@ -1,7 +1,10 @@
 <?php
 
+use App\Http\Controllers\AdminLogController;
 use App\Http\Controllers\AssetController;
+use App\Http\Controllers\CustomAuthController;
 use App\Http\Controllers\LitigantController;
+use App\Http\Controllers\NotificationController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -21,7 +24,27 @@ Auth::routes([
     'reset'    => false,
     'verify'   => false,
     'confirm'  => false,
+    'login'  => false,
+    'logout'  => false,
 ]);
+
+Route::get('login', [CustomAuthController::class, 'showLoginForm'])->name('login');
+Route::post('login', [CustomAuthController::class, 'login']);
+Route::post('logout', [CustomAuthController::class, 'logout'])->name('logout');
+
+Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
+    Route::get('logs', [AdminLogController::class, 'index'])->name('admin.logs.index');
+    Route::get('logs/{id}', [AdminLogController::class, 'show'])->name('admin.logs.show');
+    Route::post('logs/{id}/force-logout', [AdminLogController::class, 'forceLogout'])->name('admin.logs.force-logout');
+    Route::get('logs-analytics', [AdminLogController::class, 'analytics'])->name('admin.logs.analytics');
+});
+
+Route::middleware('auth')->group(function () {
+    Route::get('/check-logout-notification', [NotificationController::class, 'checkLogoutNotification'])
+        ->name('check.logout.notification');
+    Route::post('/force-logout', [NotificationController::class, 'forceLogout'])
+        ->name('force.logout');
+});
 
 Route::middleware(['auth'])->group(function () {
 

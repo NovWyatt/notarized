@@ -146,6 +146,12 @@
             <div class="sidebar-list">
                 <!-- Sidebar Menu Start -->
                 <ul class="navbar-nav iq-main-menu" id="sidebar-menu">
+                    <li class="nav-item">
+                        <a class="nav-link " aria-current="page"
+                            href="#">
+                            <span class="item-name">Profile</span>
+                        </a>
+                    </li>
                     <li class="nav-item static-item">
                         <a class="nav-link static-item disabled" href="#" tabindex="-1">
                             <span class="default-icon">Nghiệp Vụ</span>
@@ -207,6 +213,31 @@
                             <span class="item-name">Báo Cáo Hồ Sơ</span>
                         </a>
                     </li>
+                    <li>
+                        <hr class="hr-horizontal">
+                    </li>
+                    <li class="nav-item static-item">
+                        <a class="nav-link static-item disabled" href="#" tabindex="-1">
+                            <span class="default-icon">Admin</span>
+                            <span class="mini-icon">-</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->is('admin/logs*') ? 'active' : '' }}" aria-current="page"
+                            href="{{ route('admin.logs.index') }}">
+                            <span class="item-name">Admin Logs</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#"
+                            onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                            <span class="item-name">Logout</span>
+                        </a>
+                    </li>
+
+                    <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                        @csrf
+                    </form>
                 </ul>
                 <!-- Sidebar Menu End -->
             </div>
