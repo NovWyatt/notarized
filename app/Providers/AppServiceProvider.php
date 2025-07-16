@@ -15,11 +15,14 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        $this->app->singleton(SessionService::class, function ($app) {
-            return new SessionService();
-        });
+        // Đăng ký LocationService trước
         $this->app->singleton(LocationService::class, function ($app) {
             return new LocationService();
+        });
+
+        // Đăng ký SessionService với LocationService dependency
+        $this->app->singleton(SessionService::class, function ($app) {
+            return new SessionService($app->make(LocationService::class));
         });
     }
 
