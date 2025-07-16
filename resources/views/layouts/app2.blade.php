@@ -147,8 +147,7 @@
                 <!-- Sidebar Menu Start -->
                 <ul class="navbar-nav iq-main-menu" id="sidebar-menu">
                     <li class="nav-item">
-                        <a class="nav-link " aria-current="page"
-                            href="#">
+                        <a class="nav-link " aria-current="page" href="#">
                             <span class="item-name">Profile</span>
                         </a>
                     </li>
@@ -299,7 +298,7 @@
                 </div>
             </nav>
         </div>
-
+        @include('notification')
         @yield('content')
         <!-- Footer Section Start -->
         <footer class="footer">
