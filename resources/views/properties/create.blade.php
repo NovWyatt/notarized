@@ -20,6 +20,53 @@
         .required {
             color: #dc3545;
         }
+
+        .search-dropdown {
+            position: relative;
+        }
+
+        .search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #ced4da;
+            border-top: none;
+            border-radius: 0 0 0.375rem 0.375rem;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+        }
+
+        .search-result-item {
+            padding: 0.5rem 0.75rem;
+            cursor: pointer;
+            border-bottom: 1px solid #f8f9fa;
+        }
+
+        .search-result-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .search-result-item.selected {
+            background-color: #e3f2fd;
+        }
+
+        .input-group-append {
+            margin-left: -1px;
+        }
+
+        .btn-create-item {
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+        }
+
+        .search-input {
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+        }
     </style>
 @endpush
 
@@ -68,7 +115,7 @@
                 </div>
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-md-4">
+                        <div class="col-md-6">
                             <div class="mb-3">
                                 <label for="asset_type" class="form-label">
                                     Loại tài sản <span class="text-danger">*</span>
@@ -84,23 +131,7 @@
                                 </select>
                             </div>
                         </div>
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label for="asset_name" class="form-label">Tên tài sản</label>
-                                <input type="text" class="form-control" id="asset_name" name="asset_name"
-                                    value="{{ old('asset_name') }}" placeholder="Nhập tên tài sản">
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label for="estimated_value" class="form-label">Giá trị ước tính (₫)</label>
-                                <input type="number" class="form-control" id="estimated_value" name="estimated_value"
-                                    value="{{ old('estimated_value') }}" placeholder="0" min="0" step="1000">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-12">
+                        <div class="col-md-6">
                             <div class="mb-3">
                                 <label for="notes" class="form-label">Ghi chú</label>
                                 <textarea class="form-control" id="notes" name="notes" rows="3" placeholder="Thêm ghi chú về tài sản...">{{ old('notes') }}</textarea>
@@ -136,13 +167,98 @@
         </form>
     </div>
 
+    <!-- Create Certificate Type Modal -->
+    <div class="modal fade" id="createCertificateTypeModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Tạo loại chứng chỉ mới</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="createCertificateTypeForm">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="new_certificate_name" class="form-label">Tên loại chứng chỉ <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="new_certificate_name" name="name" required
+                                   placeholder="Nhập tên loại chứng chỉ...">
+                        </div>
+                        <div class="mb-3">
+                            <label for="new_certificate_description" class="form-label">Mô tả</label>
+                            <textarea class="form-control" id="new_certificate_description" name="description" rows="2"
+                                      placeholder="Mô tả về loại chứng chỉ..."></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-plus-circle me-2"></i>Tạo
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Issuing Authority Modal -->
+    <div class="modal fade" id="createIssuingAuthorityModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Tạo cơ quan cấp phát mới</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="createIssuingAuthorityForm">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="new_authority_name" class="form-label">Tên cơ quan <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="new_authority_name" name="name" required
+                                   placeholder="Nhập tên cơ quan...">
+                        </div>
+                        <div class="mb-3">
+                            <label for="new_authority_address" class="form-label">Địa chỉ</label>
+                            <textarea class="form-control" id="new_authority_address" name="address" rows="2"
+                                      placeholder="Địa chỉ cơ quan..."></textarea>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="new_authority_phone" class="form-label">Điện thoại</label>
+                                    <input type="text" class="form-control" id="new_authority_phone" name="phone"
+                                           placeholder="Số điện thoại...">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="new_authority_email" class="form-label">Email</label>
+                                    <input type="email" class="form-control" id="new_authority_email" name="email"
+                                           placeholder="Email...">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-plus-circle me-2"></i>Tạo
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <script src="{{ asset('js/assets-common.js') }}?v={{ time() }}"></script>
     <script>
         // Set configuration for create page
         AssetManager.config.routes.getFields = '{{ route('properties.get-fields') }}';
         AssetManager.config.routes.store = '{{ route('properties.store') }}';
+        AssetManager.config.routes.createCertificateType = '{{ route('certificate-types.store') }}';
+        AssetManager.config.routes.createIssuingAuthority = '{{ route('issuing-authorities.store') }}';
+        AssetManager.config.routes.searchCertificateTypes = '{{ route('certificate-types.search') }}';
+        AssetManager.config.routes.searchIssuingAuthorities = '{{ route('issuing-authorities.search') }}';
     </script>
     <script src="{{ asset('js/assets-form.js') }}?v={{ time() }}"></script>
+    <script src="{{ asset('js/assets-search.js') }}?v={{ time() }}"></script>
     <script src="{{ asset('js/assets-date.js') }}?v={{ time() }}"></script>
     <script>
         // Initialize form for create mode

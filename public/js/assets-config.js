@@ -22,7 +22,13 @@ AssetManager.config = Object.assign({
         destroy: '/properties/{id}',
         getFields: '/properties/get-fields',
         bulkDelete: '/properties/bulk-delete',
-        export: '/properties/export'
+        export: '/properties/export',
+        clone: '/properties/{id}/clone',
+        // New routes for search and create functionality
+        createCertificateType: '/certificate-types',
+        createIssuingAuthority: '/issuing-authorities',
+        searchCertificateTypes: '/certificate-types/search',
+        searchIssuingAuthorities: '/issuing-authorities/search'
     },
 
     // CSRF configuration
@@ -40,10 +46,10 @@ AssetManager.config = Object.assign({
         confirmResetMessage: 'Bạn có chắc chắn muốn đặt lại form?'
     },
 
-    // Asset type mapping
+    // Asset type mapping (updated for new structure)
     assetTypes: {
-        'real_estate_land': {
-            label: 'Bất động sản - Đất',
+        'real_estate_land_only': {
+            label: 'Bất động sản - Đất trống',
             hasLandPlot: true,
             hasCertificate: true,
             hasHouse: false,
@@ -51,7 +57,7 @@ AssetManager.config = Object.assign({
             hasVehicle: false
         },
         'real_estate_house': {
-            label: 'Bất động sản - Nhà',
+            label: 'Bất động sản - Nhà ở',
             hasLandPlot: true,
             hasCertificate: true,
             hasHouse: true,
@@ -66,8 +72,16 @@ AssetManager.config = Object.assign({
             hasApartment: true,
             hasVehicle: false
         },
-        'movable_property_vehicle': {
-            label: 'Tài sản động - Phương tiện',
+        'movable_property_car': {
+            label: 'Động sản - Ô tô',
+            hasLandPlot: false,
+            hasCertificate: false,
+            hasHouse: false,
+            hasApartment: false,
+            hasVehicle: true
+        },
+        'movable_property_motorcycle': {
+            label: 'Động sản - Xe máy',
             hasLandPlot: false,
             hasCertificate: false,
             hasHouse: false,
@@ -76,17 +90,20 @@ AssetManager.config = Object.assign({
         }
     },
 
-    // Validation rules
+    // Validation rules (updated for new structure)
     validation: {
         required: ['asset_type'],
-        numeric: ['estimated_value', 'area', 'construction_area', 'floor_area', 'number_of_floors'],
+        numeric: ['area', 'construction_area', 'floor_area', 'number_of_floors', 'payload', 'engine_capacity', 'seating_capacity'],
         date: ['issue_date', 'land_use_term', 'ownership_term', 'vehicle_issue_date'],
         maxLength: {
-            'asset_name': 255,
             'notes': 1000,
             'license_plate': 20,
             'engine_number': 50,
-            'chassis_number': 50
+            'chassis_number': 50,
+            'issue_number': 50,
+            'book_number': 50,
+            'plot_number': 50,
+            'registration_number': 50
         }
     },
 
@@ -99,7 +116,10 @@ AssetManager.config = Object.assign({
         unknownError: 'Có lỗi xảy ra. Vui lòng thử lại sau.',
         saveSuccess: 'Lưu thành công!',
         deleteSuccess: 'Xóa thành công!',
-        updateSuccess: 'Cập nhật thành công!'
+        updateSuccess: 'Cập nhật thành công!',
+        createSuccess: 'Tạo thành công!',
+        searchMinLength: 'Vui lòng nhập ít nhất 2 ký tự để tìm kiếm',
+        noSearchResults: 'Không tìm thấy kết quả phù hợp'
     }
 }, AssetManager.config || {});
 
@@ -136,7 +156,7 @@ AssetManager.initErrorHandling = function() {
     });
 };
 
-// Initialize form helpers
+// Initialize form helpers (updated for new structure)
 AssetManager.initFormHelpers = function() {
     // Auto-format number inputs
     document.addEventListener('input', function(e) {
@@ -156,7 +176,7 @@ AssetManager.initFormHelpers = function() {
         }
     });
 
-    // Auto-save draft functionality (can be enabled per form)
+    // Auto-save draft functionality (simplified for new structure)
     if (localStorage && AssetManager.config.ui.autoSaveDelay) {
         document.addEventListener('input', AssetManager.utils.debounce(function(e) {
             if (e.target.form && e.target.form.id === 'assetForm') {
@@ -177,15 +197,15 @@ AssetManager.initTooltips = function() {
     }
 };
 
-// Draft saving functionality
+// Draft saving functionality (updated for new structure)
 AssetManager.saveDraft = function(form) {
     if (!form || !form.id) return;
 
     const formData = new FormData(form);
     const draftData = {};
 
-    // Only save basic fields to localStorage
-    ['asset_type', 'asset_name', 'estimated_value', 'notes'].forEach(field => {
+    // Only save basic fields that exist in new structure
+    ['asset_type', 'notes'].forEach(field => {
         if (formData.has(field)) {
             draftData[field] = formData.get(field);
         }
@@ -234,7 +254,7 @@ AssetManager.clearDraft = function(formId) {
 
 // Enhanced utility functions
 AssetManager.utils = Object.assign(AssetManager.utils || {}, {
-    // Validate form data
+    // Validate form data (updated for new structure)
     validateForm: function(form, rules = AssetManager.config.validation) {
         const errors = [];
         const formData = new FormData(form);
@@ -328,6 +348,24 @@ AssetManager.utils = Object.assign(AssetManager.utils || {}, {
         if (confirm(message)) {
             callback();
         }
+    },
+
+    // Generate display name for asset (helper function)
+    generateAssetDisplayName: function(assetType, data = {}) {
+        const typeConfig = this.getAssetTypeConfig(assetType);
+        if (!typeConfig) return 'Tài sản mới';
+
+        if (data.license_plate) {
+            return `${typeConfig.label} - ${data.license_plate}`;
+        }
+        if (data.house_number && data.street_name) {
+            return `${typeConfig.label} - ${data.house_number} ${data.street_name}`;
+        }
+        if (data.apartment_number) {
+            return `${typeConfig.label} - Căn hộ ${data.apartment_number}`;
+        }
+
+        return typeConfig.label;
     }
 });
 

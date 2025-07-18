@@ -13,7 +13,7 @@ class Certificate extends Model
 
     protected $fillable = [
         'asset_id',
-        'certificate_type',
+        'certificate_type_id',
         'issue_number',
         'book_number',
         'issue_date'
@@ -33,23 +33,8 @@ class Certificate extends Model
         return $this->belongsTo(Asset::class);
     }
 
-    // Certificate type constants
-    const TYPE_LAND_USE_CERTIFICATE = 'land_use_certificate';
-    const TYPE_APARTMENT_OWNERSHIP_CERTIFICATE = 'apartment_ownership_certificate';
-    const TYPE_LAND_HOUSE_OWNERSHIP_CERTIFICATE = 'land_house_ownership_certificate';
-    const TYPE_HOUSE_OWNERSHIP_CERTIFICATE = 'house_ownership_certificate';
-    const TYPE_LAND_USE_RIGHT_CERTIFICATE = 'land_use_right_certificate';
-    const TYPE_BL735265 = 'bl735265';
-
-    public static function getCertificateTypes(): array
+    public function certificateType(): BelongsTo
     {
-        return [
-            self::TYPE_LAND_USE_CERTIFICATE,
-            self::TYPE_APARTMENT_OWNERSHIP_CERTIFICATE,
-            self::TYPE_LAND_HOUSE_OWNERSHIP_CERTIFICATE,
-            self::TYPE_HOUSE_OWNERSHIP_CERTIFICATE,
-            self::TYPE_LAND_USE_RIGHT_CERTIFICATE,
-            self::TYPE_BL735265
-        ];
+        return $this->belongsTo(CertificateType::class);
     }
 }

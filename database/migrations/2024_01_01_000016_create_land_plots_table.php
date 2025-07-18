@@ -1,6 +1,6 @@
 <?php
 
-// 2024_01_01_0000014_create_land_plots_table.php
+// 2024_01_01_0000016_create_land_plots_table.php
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;

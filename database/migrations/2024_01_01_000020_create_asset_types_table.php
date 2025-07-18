@@ -1,6 +1,6 @@
 <?php
 
-// 2024_01_01_0000018_create_asset_type_enum_table.php
+// 2024_01_01_0000020_create_asset_types_table.php
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;

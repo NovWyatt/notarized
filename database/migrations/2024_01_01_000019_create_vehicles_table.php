@@ -1,6 +1,6 @@
 <?php
 
-// 2024_01_01_0000017_create_vehicles_table.php
+// 2024_01_01_0000019_create_vehicles_table.php
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -13,7 +13,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('asset_id')->constrained()->onDelete('cascade');
             $table->string('registration_number', 50)->nullable();
-            $table->string('issuing_authority')->nullable();
+            $table->foreignId('issuing_authority_id')->constrained()->onDelete('restrict');
             $table->date('issue_date')->nullable();
             $table->string('license_plate', 20)->nullable();
             $table->string('brand', 100)->nullable();
@@ -29,6 +29,7 @@ return new class extends Migration
             $table->timestamps();
 
             $table->index('asset_id');
+            $table->index('issuing_authority_id');
         });
     }
 

@@ -2,7 +2,9 @@
 
 use App\Http\Controllers\AdminLogController;
 use App\Http\Controllers\AssetController;
+use App\Http\Controllers\CertificateTypeController;
 use App\Http\Controllers\CustomAuthController;
+use App\Http\Controllers\IssuingAuthorityController;
 use App\Http\Controllers\LitigantController;
 use App\Http\Controllers\NotificationController;
 use Illuminate\Support\Facades\Auth;
@@ -24,8 +26,8 @@ Auth::routes([
     'reset'    => false,
     'verify'   => false,
     'confirm'  => false,
-    'login'  => false,
-    'logout'  => false,
+    'login'    => false,
+    'logout'   => false,
 ]);
 
 Route::get('login', [CustomAuthController::class, 'showLoginForm'])->name('login');
@@ -90,6 +92,13 @@ Route::middleware(['auth'])->group(function () {
         'destroy' => 'properties.destroy',
     ]);
 });
+Route::get('/certificate-types/search', [CertificateTypeController::class, 'search'])->name('certificate-types.search');
+Route::post('/certificate-types', [CertificateTypeController::class, 'store'])->name('certificate-types.store');
+
+// Issuing Authorities routes
+Route::get('/issuing-authorities/search', [IssuingAuthorityController::class, 'search'])->name('issuing-authorities.search');
+Route::post('/issuing-authorities', [IssuingAuthorityController::class, 'store'])->name('issuing-authorities.store');
+
 Route::get('/api/search-litigants', [LitigantController::class, 'searchLitigants'])->name('search.litigants');
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');

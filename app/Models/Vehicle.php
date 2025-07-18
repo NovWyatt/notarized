@@ -14,7 +14,7 @@ class Vehicle extends Model
     protected $fillable = [
         'asset_id',
         'registration_number',
-        'issuing_authority',
+        'issuing_authority_id',
         'issue_date',
         'license_plate',
         'brand',
@@ -44,5 +44,10 @@ class Vehicle extends Model
     public function asset(): BelongsTo
     {
         return $this->belongsTo(Asset::class);
+    }
+
+    public function issuingAuthority(): BelongsTo
+    {
+        return $this->belongsTo(IssuingAuthority::class);
     }
 }

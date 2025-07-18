@@ -63,6 +63,13 @@ AssetManager.form = {
             .then(data => {
                 AssetManager.utils.removeLoading();
                 this.renderDynamicFields(data, dynamicFields);
+
+                // Initialize search after rendering new fields
+                setTimeout(() => {
+                    if (AssetManager.search) {
+                        AssetManager.search.initSearchHandlers();
+                    }
+                }, 100);
             })
             .catch(error => {
                 AssetManager.utils.removeLoading();
@@ -108,6 +115,13 @@ AssetManager.form = {
                 .then(data => {
                     AssetManager.utils.removeLoading();
                     this.addMissingFields(data, dynamicFields, needsToAdd);
+
+                    // Initialize search for new fields
+                    setTimeout(() => {
+                        if (AssetManager.search) {
+                            AssetManager.search.initSearchHandlers();
+                        }
+                    }, 100);
                 })
                 .catch(error => {
                     AssetManager.utils.removeLoading();
@@ -278,33 +292,31 @@ AssetManager.form = {
         this.initAutoSave();
     },
 
-    // Initialize auto-save functionality (optional)
+    // Initialize auto-save functionality (simplified for new structure)
     initAutoSave: function() {
         if (!AssetManager.config.routes.update) return;
 
-        let autoSaveTimeout;
         const scheduleAutoSave = AssetManager.utils.debounce(() => {
             this.performAutoSave();
         }, 30000); // Auto-save after 30 seconds of inactivity
 
-        // Attach auto-save to form inputs (optional - can be enabled as needed)
-        // Uncomment the lines below to enable auto-save
-        /*
-        document.querySelectorAll('#assetForm input, #assetForm textarea, #assetForm select').forEach(input => {
-            input.addEventListener('input', scheduleAutoSave);
-            input.addEventListener('change', scheduleAutoSave);
+        // Only auto-save basic fields that still exist
+        const basicFields = ['notes'];
+        basicFields.forEach(fieldName => {
+            const field = document.getElementById(fieldName);
+            if (field) {
+                field.addEventListener('input', scheduleAutoSave);
+                field.addEventListener('change', scheduleAutoSave);
+            }
         });
-        */
     },
 
-    // Perform auto-save (optional)
+    // Perform auto-save (updated for new structure)
     performAutoSave: function() {
         const formData = new FormData(document.getElementById('assetForm'));
 
-        // Only save basic fields, not the full form
+        // Only save basic fields that exist in new structure
         const basicData = {
-            asset_name: formData.get('asset_name'),
-            estimated_value: formData.get('estimated_value'),
             notes: formData.get('notes'),
             _token: AssetManager.config.csrf.token,
             _method: 'PUT'

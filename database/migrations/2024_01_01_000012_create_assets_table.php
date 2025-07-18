@@ -18,8 +18,6 @@ return new class extends Migration
                 'movable_property_car',
                 'movable_property_motorcycle'
             ]);
-            $table->string('asset_name')->nullable();
-            $table->decimal('estimated_value', 15, 2)->nullable();
             $table->text('notes')->nullable();
             $table->timestamps();
 

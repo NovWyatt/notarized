@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Auth;
 
 class Asset extends Model
 {
@@ -15,20 +16,42 @@ class Asset extends Model
 
     protected $fillable = [
         'asset_type',
-        'asset_name',
-        'estimated_value',
-        'notes'
+        'notes',
+        'created_by',
+        'updated_by'
     ];
 
     protected $casts = [
-        'estimated_value' => 'decimal:2',
         'created_at' => 'datetime',
         'updated_at' => 'datetime'
     ];
 
     protected $hidden = [];
 
-    // Relationships
+    // Boot method để tự động gán user
+    protected static function boot()
+    {
+        parent::boot();
+
+        // Tự động gán created_by khi tạo mới
+        static::creating(function ($model) {
+            if (Auth::check() && !$model->created_by) {
+                $model->created_by = Auth::id();
+            }
+            if (Auth::check() && !$model->updated_by) {
+                $model->updated_by = Auth::id();
+            }
+        });
+
+        // Tự động gán updated_by khi cập nhật
+        static::updating(function ($model) {
+            if (Auth::check()) {
+                $model->updated_by = Auth::id();
+            }
+        });
+    }
+
+    // Relationships với các bảng con
     public function certificates(): HasMany
     {
         return $this->hasMany(Certificate::class);
@@ -54,6 +77,17 @@ class Asset extends Model
         return $this->hasOne(Vehicle::class);
     }
 
+    // Relationships với User
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function updater(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'updated_by');
+    }
+
     // Asset type constants
     const TYPE_REAL_ESTATE_HOUSE = 'real_estate_house';
     const TYPE_REAL_ESTATE_APARTMENT = 'real_estate_apartment';
@@ -70,5 +104,42 @@ class Asset extends Model
             self::TYPE_MOVABLE_PROPERTY_CAR,
             self::TYPE_MOVABLE_PROPERTY_MOTORCYCLE
         ];
+    }
+
+    // Scopes for filtering by user
+    public function scopeCreatedBy($query, $userId)
+    {
+        return $query->where('created_by', $userId);
+    }
+
+    public function scopeUpdatedBy($query, $userId)
+    {
+        return $query->where('updated_by', $userId);
+    }
+
+    public function scopeOwnedBy($query, $userId)
+    {
+        return $query->where('created_by', $userId);
+    }
+
+    // Helper methods
+    public function getCreatorNameAttribute(): string
+    {
+        return $this->creator ? $this->creator->name : 'Hệ thống';
+    }
+
+    public function getUpdaterNameAttribute(): string
+    {
+        return $this->updater ? $this->updater->name : 'Hệ thống';
+    }
+
+    public function isCreatedBy($userId): bool
+    {
+        return $this->created_by == $userId;
+    }
+
+    public function isUpdatedBy($userId): bool
+    {
+        return $this->updated_by == $userId;
     }
 }

@@ -6,15 +6,23 @@ window.AssetManager = window.AssetManager || {};
 // Common configurations
 AssetManager.config = {
     routes: {
-        getFields: '', // Will be set by each page
-        bulkDelete: '', // Will be set by each page
-        store: '', // Will be set by each page
-        update: '' // Will be set by each page
+        getFields: "", // Will be set by each page
+        bulkDelete: "", // Will be set by each page
+        store: "", // Will be set by each page
+        update: "", // Will be set by each page
+        createCertificateType: "", // Will be set by each page
+        createIssuingAuthority: "", // Will be set by each page
+        searchCertificateTypes: "", // Will be set by each page
+        searchIssuingAuthorities: "", // Will be set by each page
     },
     csrf: {
-        token: document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ||
-               document.querySelector('input[name="_token"]')?.value || ''
-    }
+        token:
+            document
+                .querySelector('meta[name="csrf-token"]')
+                ?.getAttribute("content") ||
+            document.querySelector('input[name="_token"]')?.value ||
+            "",
+    },
 };
 
 // Field templates for dynamic forms
@@ -28,11 +36,19 @@ AssetManager.fieldTemplates = {
                 <div class="row">
                     <div class="col-md-3">
                         <div class="mb-3">
-                            <label for="certificate_type" class="form-label">Loại giấy chứng nhận</label>
-                            <select class="form-select" id="certificate_type" name="certificate_type">
-                                <option value="">Chọn loại</option>
-                                <!-- Options will be populated by server -->
-                            </select>
+                            <label for="certificate_type_id" class="form-label">Loại giấy chứng nhận</label>
+                            <div class="search-dropdown">
+                                <div class="input-group">
+                                    <input type="text" class="form-control search-input" id="certificate_type_search"
+                                           placeholder="Tìm kiếm loại chứng chỉ..." autocomplete="off">
+                                    <button type="button" class="btn btn-outline-primary btn-create-item"
+                                            onclick="AssetManager.search.showCreateCertificateTypeModal()">
+                                        <i class="bi bi-plus"></i>
+                                    </button>
+                                </div>
+                                <input type="hidden" id="certificate_type_id" name="certificate_type_id">
+                                <div class="search-results" id="certificate_type_results"></div>
+                            </div>
                         </div>
                     </div>
                     <div class="col-md-3">
@@ -392,9 +408,19 @@ AssetManager.fieldTemplates = {
                 <div class="row">
                     <div class="col-md-4">
                         <div class="mb-3">
-                            <label for="issuing_authority" class="form-label">Nơi cấp</label>
-                            <input type="text" class="form-control" id="issuing_authority" name="issuing_authority"
-                                   placeholder="Nhập nơi cấp">
+                            <label for="issuing_authority_id" class="form-label">Nơi cấp</label>
+                            <div class="search-dropdown">
+                                <div class="input-group">
+                                    <input type="text" class="form-control search-input" id="issuing_authority_search"
+                                           placeholder="Tìm kiếm cơ quan cấp phát..." autocomplete="off">
+                                    <button type="button" class="btn btn-outline-primary btn-create-item"
+                                            onclick="AssetManager.search.showCreateIssuingAuthorityModal()">
+                                        <i class="bi bi-plus"></i>
+                                    </button>
+                                </div>
+                                <input type="hidden" id="issuing_authority_id" name="issuing_authority_id">
+                                <div class="search-results" id="issuing_authority_results"></div>
+                            </div>
                         </div>
                     </div>
                     <div class="col-md-2">
@@ -437,86 +463,96 @@ AssetManager.fieldTemplates = {
                 </div>
             </div>
         </div>
-    `
+    `,
 };
 
 // Common utility functions
 AssetManager.utils = {
     // Show loading indicator
-    showLoading: function(container, message = 'Đang tải...') {
-        const loadingDiv = document.createElement('div');
-        loadingDiv.className = 'text-center py-3';
+    showLoading: function (container, message = "Đang tải...") {
+        const loadingDiv = document.createElement("div");
+        loadingDiv.className = "text-center py-3";
         loadingDiv.innerHTML = `<div class="spinner-border text-primary" role="status"></div><p class="mt-2 text-muted">${message}</p>`;
-        loadingDiv.id = 'loading-indicator';
+        loadingDiv.id = "loading-indicator";
         container.appendChild(loadingDiv);
     },
 
     // Remove loading indicator
-    removeLoading: function() {
-        const loadingIndicator = document.getElementById('loading-indicator');
+    removeLoading: function () {
+        const loadingIndicator = document.getElementById("loading-indicator");
         if (loadingIndicator) {
             loadingIndicator.remove();
         }
     },
 
     // Show error message
-    showError: function(container, error, technicalDetails = '') {
-        let errorMessage = 'Có lỗi xảy ra.';
+    showError: function (container, error, technicalDetails = "") {
+        let errorMessage = "Có lỗi xảy ra.";
 
         if (error.message) {
-            if (error.message.includes('NetworkError') || error.message.includes('Failed to fetch')) {
-                errorMessage = 'Lỗi kết nối mạng. Vui lòng kiểm tra kết nối internet.';
-            } else if (error.message.includes('404')) {
-                errorMessage = 'Không tìm thấy endpoint. Vui lòng kiểm tra route.';
-            } else if (error.message.includes('500')) {
-                errorMessage = 'Lỗi server. Vui lòng kiểm tra logs.';
-            } else if (error.message.includes('JSON')) {
-                errorMessage = 'Server trả về dữ liệu không đúng định dạng.';
+            if (
+                error.message.includes("NetworkError") ||
+                error.message.includes("Failed to fetch")
+            ) {
+                errorMessage =
+                    "Lỗi kết nối mạng. Vui lòng kiểm tra kết nối internet.";
+            } else if (error.message.includes("404")) {
+                errorMessage =
+                    "Không tìm thấy endpoint. Vui lòng kiểm tra route.";
+            } else if (error.message.includes("500")) {
+                errorMessage = "Lỗi server. Vui lòng kiểm tra logs.";
+            } else if (error.message.includes("JSON")) {
+                errorMessage = "Server trả về dữ liệu không đúng định dạng.";
             }
             technicalDetails = error.message;
         }
 
-        const errorDiv = document.createElement('div');
-        errorDiv.className = 'alert alert-danger';
+        const errorDiv = document.createElement("div");
+        errorDiv.className = "alert alert-danger";
         errorDiv.innerHTML = `
             <h6><i class="bi bi-exclamation-triangle me-2"></i>Có lỗi xảy ra</h6>
             <p class="mb-2"><strong>${errorMessage}</strong></p>
-            ${technicalDetails ? `
+            ${
+                technicalDetails
+                    ? `
                 <details>
                     <summary>Chi tiết kỹ thuật (click để xem)</summary>
                     <pre class="mt-2 small text-muted">${technicalDetails}</pre>
                 </details>
-            ` : ''}
+            `
+                    : ""
+            }
         `;
         container.appendChild(errorDiv);
     },
 
     // Show success notification
-    showSuccess: function(message, duration = 3000) {
-        const indicator = document.createElement('div');
-        indicator.className = 'alert alert-success position-fixed';
-        indicator.style.top = '20px';
-        indicator.style.right = '20px';
-        indicator.style.zIndex = '9999';
-        indicator.style.minWidth = '300px';
+    showSuccess: function (message, duration = 3000) {
+        const indicator = document.createElement("div");
+        indicator.className = "alert alert-success position-fixed";
+        indicator.style.top = "20px";
+        indicator.style.right = "20px";
+        indicator.style.zIndex = "9999";
+        indicator.style.minWidth = "300px";
         indicator.innerHTML = `<i class="bi bi-check-circle me-2"></i>${message}`;
         document.body.appendChild(indicator);
         setTimeout(() => indicator.remove(), duration);
     },
 
     // Make API request with proper headers
-    apiRequest: function(url, options = {}) {
+    apiRequest: function (url, options = {}) {
         const defaultOptions = {
             headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest'
-            }
+                Accept: "application/json",
+                "Content-Type": "application/json",
+                "X-Requested-With": "XMLHttpRequest",
+            },
         };
 
         // Add CSRF token if available
         if (AssetManager.config.csrf.token) {
-            defaultOptions.headers['X-CSRF-TOKEN'] = AssetManager.config.csrf.token;
+            defaultOptions.headers["X-CSRF-TOKEN"] =
+                AssetManager.config.csrf.token;
         }
 
         // Merge options
@@ -525,28 +561,36 @@ AssetManager.utils = {
             ...options,
             headers: {
                 ...defaultOptions.headers,
-                ...options.headers
-            }
+                ...options.headers,
+            },
         };
 
         return fetch(url, mergedOptions)
-            .then(response => {
-                return response.text().then(text => {
+            .then((response) => {
+                return response.text().then((text) => {
                     try {
                         const jsonData = JSON.parse(text);
                         return {
                             ok: response.ok,
                             status: response.status,
-                            data: jsonData
+                            data: jsonData,
                         };
                     } catch (parseError) {
-                        throw new Error(`Invalid JSON response. Status: ${response.status}. Content: ${text.substring(0, 100)}...`);
+                        throw new Error(
+                            `Invalid JSON response. Status: ${
+                                response.status
+                            }. Content: ${text.substring(0, 100)}...`
+                        );
                     }
                 });
             })
-            .then(result => {
+            .then((result) => {
                 if (!result.ok) {
-                    throw new Error(`HTTP ${result.status}: ${result.data.message || 'Unknown error'}`);
+                    throw new Error(
+                        `HTTP ${result.status}: ${
+                            result.data.message || "Unknown error"
+                        }`
+                    );
                 }
                 if (result.data.error) {
                     throw new Error(result.data.message || result.data.error);
@@ -556,23 +600,23 @@ AssetManager.utils = {
     },
 
     // Find section by header text
-    findSectionByText: function(container, text) {
-        const headers = container.querySelectorAll('.card-header h5');
+    findSectionByText: function (container, text) {
+        const headers = container.querySelectorAll(".card-header h5");
         for (let header of headers) {
             if (header.textContent.includes(text)) {
-                return header.closest('.card');
+                return header.closest(".card");
             }
         }
         return null;
     },
 
     // Format number with thousand separators
-    formatNumber: function(num) {
-        return new Intl.NumberFormat('vi-VN').format(num);
+    formatNumber: function (num) {
+        return new Intl.NumberFormat("vi-VN").format(num);
     },
 
     // Debounce function
-    debounce: function(func, wait) {
+    debounce: function (func, wait) {
         let timeout;
         return function executedFunction(...args) {
             const later = () => {
@@ -582,14 +626,18 @@ AssetManager.utils = {
             clearTimeout(timeout);
             timeout = setTimeout(later, wait);
         };
-    }
+    },
 };
 
 // Initialize configuration when DOM is loaded
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener("DOMContentLoaded", function () {
     // Update CSRF token if it wasn't available during initial load
     if (!AssetManager.config.csrf.token) {
-        AssetManager.config.csrf.token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ||
-                                        document.querySelector('input[name="_token"]')?.value || '';
+        AssetManager.config.csrf.token =
+            document
+                .querySelector('meta[name="csrf-token"]')
+                ?.getAttribute("content") ||
+            document.querySelector('input[name="_token"]')?.value ||
+            "";
     }
 });

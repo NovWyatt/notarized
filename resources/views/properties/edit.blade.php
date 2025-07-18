@@ -32,6 +32,53 @@
             border-radius: 4px;
             font-size: 0.875rem;
         }
+
+        .search-dropdown {
+            position: relative;
+        }
+
+        .search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #ced4da;
+            border-top: none;
+            border-radius: 0 0 0.375rem 0.375rem;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+        }
+
+        .search-result-item {
+            padding: 0.5rem 0.75rem;
+            cursor: pointer;
+            border-bottom: 1px solid #f8f9fa;
+        }
+
+        .search-result-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .search-result-item.selected {
+            background-color: #e3f2fd;
+        }
+
+        .input-group-append {
+            margin-left: -1px;
+        }
+
+        .btn-create-item {
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+        }
+
+        .search-input {
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+        }
     </style>
 @endpush
 
@@ -43,9 +90,7 @@
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item"><a href="{{ route('properties.index') }}">Tài sản</a></li>
-                        <li class="breadcrumb-item"><a
-                                href="{{ route('properties.show', $asset) }}">{{ $asset->asset_name ?: 'Tài sản #' . $asset->id }}</a>
-                        </li>
+                        <li class="breadcrumb-item"><a href="{{ route('properties.show', $asset) }}">{{ $asset->display_name }}</a></li>
                         <li class="breadcrumb-item active">Chỉnh sửa</li>
                     </ol>
                 </nav>
@@ -95,7 +140,7 @@
                 </div>
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-md-4">
+                        <div class="col-md-6">
                             <div class="mb-3">
                                 <label for="asset_type" class="form-label">
                                     Loại tài sản <span class="text-danger">*</span>
@@ -111,24 +156,7 @@
                                 </select>
                             </div>
                         </div>
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label for="asset_name" class="form-label">Tên tài sản</label>
-                                <input type="text" class="form-control" id="asset_name" name="asset_name"
-                                    value="{{ old('asset_name', $asset->asset_name) }}" placeholder="Nhập tên tài sản">
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label for="estimated_value" class="form-label">Giá trị ước tính (₫)</label>
-                                <input type="number" class="form-control" id="estimated_value" name="estimated_value"
-                                    value="{{ old('estimated_value', $asset->estimated_value) }}" placeholder="0"
-                                    min="0" step="1000">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-12">
+                        <div class="col-md-6">
                             <div class="mb-3">
                                 <label for="notes" class="form-label">Ghi chú</label>
                                 <textarea class="form-control" id="notes" name="notes" rows="3" placeholder="Thêm ghi chú về tài sản...">{{ old('notes', $asset->notes) }}</textarea>
@@ -149,7 +177,7 @@
                 @endphp
 
                 <!-- Certificate Fields -->
-                @if ($certificate || (old('certificate_type') && \App\Enums\AssetTypeEnum::isRealEstate($asset->asset_type)))
+                @if ($certificate || (old('certificate_type_id') && \App\Enums\AssetTypeEnum::isRealEstate($asset->asset_type)))
                     <div class="card mb-4">
                         <div class="card-header">
                             <h5 class="mb-0">Thông tin Giấy Chứng Nhận</h5>
@@ -158,16 +186,21 @@
                             <div class="row">
                                 <div class="col-md-3">
                                     <div class="mb-3">
-                                        <label for="certificate_type" class="form-label">Loại giấy chứng nhận</label>
-                                        <select class="form-select" id="certificate_type" name="certificate_type">
-                                            <option value="">Chọn loại</option>
-                                            @foreach ($certificateTypes as $value => $label)
-                                                <option value="{{ $value }}"
-                                                    {{ old('certificate_type', $certificate?->certificate_type) === $value ? 'selected' : '' }}>
-                                                    {{ $label }}
-                                                </option>
-                                            @endforeach
-                                        </select>
+                                        <label for="certificate_type_id" class="form-label">Loại giấy chứng nhận</label>
+                                        <div class="search-dropdown">
+                                            <div class="input-group">
+                                                <input type="text" class="form-control search-input" id="certificate_type_search"
+                                                       placeholder="Tìm kiếm loại chứng chỉ..." autocomplete="off"
+                                                       value="{{ $certificate && $certificate->certificateType ? $certificate->certificateType->name : old('certificate_type_search') }}">
+                                                <button type="button" class="btn btn-outline-primary btn-create-item"
+                                                        onclick="AssetManager.search.showCreateCertificateTypeModal()">
+                                                    <i class="bi bi-plus"></i>
+                                                </button>
+                                            </div>
+                                            <input type="hidden" id="certificate_type_id" name="certificate_type_id"
+                                                   value="{{ old('certificate_type_id', $certificate?->certificate_type_id) }}">
+                                            <div class="search-results" id="certificate_type_results"></div>
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="col-md-3">
@@ -588,11 +621,21 @@
                             <div class="row">
                                 <div class="col-md-4">
                                     <div class="mb-3">
-                                        <label for="issuing_authority" class="form-label">Nơi cấp</label>
-                                        <input type="text" class="form-control" id="issuing_authority"
-                                            name="issuing_authority"
-                                            value="{{ old('issuing_authority', $vehicle?->issuing_authority) }}"
-                                            placeholder="Nhập nơi cấp">
+                                        <label for="issuing_authority_id" class="form-label">Nơi cấp</label>
+                                        <div class="search-dropdown">
+                                            <div class="input-group">
+                                                <input type="text" class="form-control search-input" id="issuing_authority_search"
+                                                       placeholder="Tìm kiếm cơ quan cấp phát..." autocomplete="off"
+                                                       value="{{ $vehicle && $vehicle->issuingAuthority ? $vehicle->issuingAuthority->name : old('issuing_authority_search') }}">
+                                                <button type="button" class="btn btn-outline-primary btn-create-item"
+                                                        onclick="AssetManager.search.showCreateIssuingAuthorityModal()">
+                                                    <i class="bi bi-plus"></i>
+                                                </button>
+                                            </div>
+                                            <input type="hidden" id="issuing_authority_id" name="issuing_authority_id"
+                                                   value="{{ old('issuing_authority_id', $vehicle?->issuing_authority_id) }}">
+                                            <div class="search-results" id="issuing_authority_results"></div>
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="col-md-2">
@@ -670,13 +713,98 @@
         </form>
     </div>
 
+    <!-- Create Certificate Type Modal -->
+    <div class="modal fade" id="createCertificateTypeModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Tạo loại chứng chỉ mới</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="createCertificateTypeForm">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="new_certificate_name" class="form-label">Tên loại chứng chỉ <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="new_certificate_name" name="name" required
+                                   placeholder="Nhập tên loại chứng chỉ...">
+                        </div>
+                        <div class="mb-3">
+                            <label for="new_certificate_description" class="form-label">Mô tả</label>
+                            <textarea class="form-control" id="new_certificate_description" name="description" rows="2"
+                                      placeholder="Mô tả về loại chứng chỉ..."></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-plus-circle me-2"></i>Tạo
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Issuing Authority Modal -->
+    <div class="modal fade" id="createIssuingAuthorityModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Tạo cơ quan cấp phát mới</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="createIssuingAuthorityForm">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="new_authority_name" class="form-label">Tên cơ quan <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="new_authority_name" name="name" required
+                                   placeholder="Nhập tên cơ quan...">
+                        </div>
+                        <div class="mb-3">
+                            <label for="new_authority_address" class="form-label">Địa chỉ</label>
+                            <textarea class="form-control" id="new_authority_address" name="address" rows="2"
+                                      placeholder="Địa chỉ cơ quan..."></textarea>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="new_authority_phone" class="form-label">Điện thoại</label>
+                                    <input type="text" class="form-control" id="new_authority_phone" name="phone"
+                                           placeholder="Số điện thoại...">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="new_authority_email" class="form-label">Email</label>
+                                    <input type="email" class="form-control" id="new_authority_email" name="email"
+                                           placeholder="Email...">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-plus-circle me-2"></i>Tạo
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <script src="{{ asset('js/assets-common.js') }}?v={{ time() }}"></script>
     <script>
         // Set configuration for edit page
         AssetManager.config.routes.getFields = '{{ route('properties.get-fields') }}';
         AssetManager.config.routes.update = '{{ route('properties.update', $asset) }}';
+        AssetManager.config.routes.createCertificateType = '{{ route('certificate-types.store') }}';
+        AssetManager.config.routes.createIssuingAuthority = '{{ route('issuing-authorities.store') }}';
+        AssetManager.config.routes.searchCertificateTypes = '{{ route('certificate-types.search') }}';
+        AssetManager.config.routes.searchIssuingAuthorities = '{{ route('issuing-authorities.search') }}';
     </script>
     <script src="{{ asset('js/assets-form.js') }}?v={{ time() }}"></script>
+    <script src="{{ asset('js/assets-search.js') }}?v={{ time() }}"></script>
     <script src="{{ asset('js/assets-date.js') }}?v={{ time() }}"></script>
     <script>
         // Initialize form for edit mode

@@ -4,12 +4,14 @@
 namespace App\Http\Controllers;
 
 use App\Enums\AssetTypeEnum;
-use App\Enums\CertificateTypeEnum;
 use App\Models\Apartment;
 use App\Models\Asset;
 use App\Models\Certificate;
+use App\Models\CertificateType;
 use App\Models\House;
+use App\Models\IssuingAuthority;
 use App\Models\LandPlot;
+use App\Models\User;
 use App\Models\Vehicle;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -27,14 +29,35 @@ class AssetController extends Controller
      */
     public function index(Request $request): View | JsonResponse
     {
-        $query = Asset::with(['certificates', 'landPlots', 'house', 'apartment', 'vehicle']);
+        $query = Asset::with([
+            'certificates.certificateType',
+            'landPlots',
+            'house',
+            'apartment',
+            'vehicle.issuingAuthority',
+            'creator:id,name,email,department', // Load thông tin người tạo
+            'updater:id,name,email,department', // Load thông tin người cập nhật
+        ]);
 
         // Search functionality
         if ($request->filled('search')) {
             $search = $request->get('search');
             $query->where(function ($q) use ($search) {
-                $q->where('asset_name', 'like', "%{$search}%")
-                    ->orWhere('notes', 'like', "%{$search}%");
+                $q->where('notes', 'like', "%{$search}%")
+                    ->orWhereHas('landPlots', function ($landQuery) use ($search) {
+                        $landQuery->where('street_name', 'like', "%{$search}%")
+                            ->orWhere('house_number', 'like', "%{$search}%")
+                            ->orWhere('province', 'like', "%{$search}%")
+                            ->orWhere('district', 'like', "%{$search}%")
+                            ->orWhere('ward', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('vehicle', function ($vehicleQuery) use ($search) {
+                        $vehicleQuery->where('license_plate', 'like', "%{$search}%")
+                            ->orWhere('brand', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('creator', function ($userQuery) use ($search) {
+                        $userQuery->where('name', 'like', "%{$search}%");
+                    });
             });
         }
 
@@ -43,11 +66,22 @@ class AssetController extends Controller
             $query->where('asset_type', $request->get('asset_type'));
         }
 
+        // Filter by creator (my assets)
+        if ($request->filled('my_assets') && $request->my_assets == '1') {
+            $query->where('created_by', auth()->id());
+        }
+
+        // Filter by creator
+        if ($request->filled('created_by')) {
+            $query->where('created_by', $request->get('created_by'));
+        }
+
         // Sort functionality
         $sortField     = $request->get('sort', 'created_at');
         $sortDirection = $request->get('direction', 'desc');
 
-        if (in_array($sortField, ['asset_name', 'asset_type', 'estimated_value', 'created_at'])) {
+        $allowedSortFields = ['asset_type', 'created_at', 'updated_at'];
+        if (in_array($sortField, $allowedSortFields)) {
             $query->orderBy($sortField, $sortDirection);
         }
 
@@ -55,20 +89,27 @@ class AssetController extends Controller
 
         // Add formatted data for each asset
         $assets->getCollection()->transform(function ($asset) {
-            $asset->formatted_value = $this->formatCurrency($asset->estimated_value);
             $asset->type_label      = AssetTypeEnum::label($asset->asset_type);
             $asset->primary_address = $this->getPrimaryAddress($asset);
             $asset->summary_info    = $this->getAssetSummary($asset);
+            $asset->display_name    = $this->getAssetDisplayName($asset);
+            $asset->creator_name    = $asset->creator_name;
+            $asset->updater_name    = $asset->updater_name;
+            $asset->can_edit        = $this->canEditAsset($asset);
+            $asset->can_delete      = $this->canDeleteAsset($asset);
             return $asset;
         });
 
         $data = [
-            'assets'        => $assets,
-            'assetTypes'    => AssetTypeEnum::options(),
-            'searchTerm'    => $request->get('search'),
-            'selectedType'  => $request->get('asset_type'),
-            'sortField'     => $sortField,
-            'sortDirection' => $sortDirection,
+            'assets'          => $assets,
+            'assetTypes'      => AssetTypeEnum::options(),
+            'users'           => $this->getActiveUsers(),
+            'searchTerm'      => $request->get('search'),
+            'selectedType'    => $request->get('asset_type'),
+            'selectedCreator' => $request->get('created_by'),
+            'myAssets'        => $request->get('my_assets'),
+            'sortField'       => $sortField,
+            'sortDirection'   => $sortDirection,
         ];
 
         if ($request->expectsJson()) {
@@ -78,14 +119,28 @@ class AssetController extends Controller
         return view('properties.index', $data);
     }
 
+    private function getActiveUsers(): array
+    {
+        return User::orderBy('name')
+            ->pluck('name', 'id')
+            ->toArray();
+    }
+
+    public function myAssets(Request $request): View | JsonResponse
+    {
+        $request->merge(['my_assets' => '1']);
+        return $this->index($request);
+    }
+
     /**
      * Show the form for creating a new resource.
      */
     public function create(): View
     {
         $data = [
-            'assetTypes'       => AssetTypeEnum::options(),
-            'certificateTypes' => CertificateTypeEnum::options(),
+            'assetTypes'         => AssetTypeEnum::options(),
+            'certificateTypes'   => CertificateType::active()->get()->pluck('name', 'id'),
+            'issuingAuthorities' => IssuingAuthority::active()->get()->pluck('name', 'id'),
         ];
 
         return view('properties.create', $data);
@@ -159,13 +214,18 @@ class AssetController extends Controller
             $relations = $this->getEagerLoadRelations($property->asset_type);
         }
 
+        // Thêm thông tin user vào relations
+        $relations[] = 'creator:id,name,email';
+        $relations[] = 'updater:id,name,email';
+
         $property->load($relations);
 
         $data = [
-            'asset'          => $property, // Có thể giữ tên 'asset' cho view
+            'asset'          => $property,
             'typeLabel'      => AssetTypeEnum::label($property->asset_type ?? ''),
-            'formattedValue' => $this->formatCurrency($property->estimated_value),
+            'displayName'    => $this->getAssetDisplayName($property),
             'detailSections' => $this->getDetailSections($property),
+            'userInfo'       => $this->getUserInfo($property),
             'canEdit'        => $this->canEditAsset($property),
             'canDelete'      => $this->canDeleteAsset($property),
         ];
@@ -175,6 +235,22 @@ class AssetController extends Controller
         }
 
         return view('properties.show', $data);
+    }
+
+    private function getUserInfo(Asset $asset): array
+    {
+        return [
+            'creator' => [
+                'name'       => $asset->creator ? $asset->creator->name : 'Hệ thống',
+                'email'      => $asset->creator ? $asset->creator->email : null,
+                'created_at' => $asset->created_at->format('d/m/Y H:i:s'),
+            ],
+            'updater' => [
+                'name'       => $asset->updater ? $asset->updater->name : 'Hệ thống',
+                'email'      => $asset->updater ? $asset->updater->email : null,
+                'updated_at' => $asset->updated_at->format('d/m/Y H:i:s'),
+            ],
+        ];
     }
 
     /**
@@ -191,10 +267,11 @@ class AssetController extends Controller
         $property->load($relations);
 
         $data = [
-            'asset'            => $property, // Có thể giữ tên 'asset' cho view
-            'assetTypes'       => AssetTypeEnum::options(),
-            'certificateTypes' => CertificateTypeEnum::options(),
-            'isEditing'        => true,
+            'asset'              => $property,
+            'assetTypes'         => AssetTypeEnum::options(),
+            'certificateTypes'   => CertificateType::active()->get()->pluck('name', 'id'),
+            'issuingAuthorities' => IssuingAuthority::active()->get()->pluck('name', 'id'),
+            'isEditing'          => true,
         ];
 
         return view('properties.edit', $data);
@@ -269,7 +346,7 @@ class AssetController extends Controller
     public function destroy(Asset $asset): RedirectResponse | JsonResponse
     {
         try {
-            $assetName = $asset->asset_name ?? 'Tài sản #' . $asset->id;
+            $assetName = $this->getAssetDisplayName($asset);
             $asset->delete();
 
             $message = "Tài sản '{$assetName}' đã được xóa thành công!";
@@ -333,15 +410,20 @@ class AssetController extends Controller
 
             // Tạo response data
             $responseData = [
-                'success'            => true,
-                'asset_type'         => $assetType,
-                'certificate_fields' => AssetTypeEnum::isRealEstate($assetType),
-                'land_plot_fields'   => AssetTypeEnum::isRealEstate($assetType),
-                'house_fields'       => AssetTypeEnum::hasHouseInfo($assetType),
-                'apartment_fields'   => AssetTypeEnum::hasApartmentInfo($assetType),
-                'vehicle_fields'     => AssetTypeEnum::hasVehicleInfo($assetType),
-                'certificate_types'  => CertificateTypeEnum::options(),
-                'debug_info'         => [
+                'success'             => true,
+                'asset_type'          => $assetType,
+                'certificate_fields'  => AssetTypeEnum::isRealEstate($assetType),
+                'land_plot_fields'    => AssetTypeEnum::isRealEstate($assetType),
+                'house_fields'        => AssetTypeEnum::hasHouseInfo($assetType),
+                'apartment_fields'    => AssetTypeEnum::hasApartmentInfo($assetType),
+                'vehicle_fields'      => AssetTypeEnum::hasVehicleInfo($assetType),
+                'certificate_types'   => CertificateType::active()->get()->map(function ($type) {
+                    return ['id' => $type->id, 'name' => $type->name];
+                }),
+                'issuing_authorities' => IssuingAuthority::active()->get()->map(function ($authority) {
+                    return ['id' => $authority->id, 'name' => $authority->name];
+                }),
+                'debug_info'          => [
                     'timestamp'       => now()->toISOString(),
                     'is_real_estate'  => AssetTypeEnum::isRealEstate($assetType),
                     'php_version'     => PHP_VERSION,
@@ -416,8 +498,7 @@ class AssetController extends Controller
             DB::beginTransaction();
 
             // Clone main asset
-            $newAsset             = $asset->replicate();
-            $newAsset->asset_name = $asset->asset_name ? $asset->asset_name . ' (Bản sao)' : null;
+            $newAsset = $asset->replicate();
             $newAsset->save();
 
             // Clone related data
@@ -470,10 +551,8 @@ class AssetController extends Controller
     private function validateAssetData(Request $request, ?int $assetId = null): \Illuminate\Validation\Validator
     {
         $rules = [
-            'asset_type'      => ['required', Rule::in(AssetTypeEnum::all())],
-            'asset_name'      => 'nullable|string|max:255',
-            'estimated_value' => 'nullable|numeric|min:0',
-            'notes'           => 'nullable|string',
+            'asset_type' => ['required', Rule::in(AssetTypeEnum::all())],
+            'notes'      => 'nullable|string',
         ];
 
         // Add rules for certificates
@@ -504,10 +583,10 @@ class AssetController extends Controller
     private function getCertificateValidationRules(): array
     {
         return [
-            'certificate_type' => ['nullable', Rule::in(CertificateTypeEnum::all())],
-            'issue_number'     => 'nullable|string|max:50',
-            'book_number'      => 'nullable|string|max:50',
-            'issue_date'       => 'nullable|date',
+            'certificate_type_id' => 'nullable|exists:certificate_types,id',
+            'issue_number'        => 'nullable|string|max:50',
+            'book_number'         => 'nullable|string|max:50',
+            'issue_date'          => 'nullable|date',
         ];
     }
 
@@ -575,20 +654,20 @@ class AssetController extends Controller
     private function getVehicleValidationRules(): array
     {
         return [
-            'registration_number' => 'nullable|string|max:50',
-            'issuing_authority'   => 'nullable|string|max:255',
-            'vehicle_issue_date'  => 'nullable|date',
-            'license_plate'       => 'nullable|string|max:20',
-            'brand'               => 'nullable|string|max:100',
-            'vehicle_type'        => 'nullable|string|max:100',
-            'color'               => 'nullable|string|max:50',
-            'payload'             => 'nullable|numeric|min:0',
-            'engine_number'       => 'nullable|string|max:50',
-            'chassis_number'      => 'nullable|string|max:50',
-            'type_number'         => 'nullable|string|max:50',
-            'engine_capacity'     => 'nullable|numeric|min:0',
-            'seating_capacity'    => 'nullable|integer|min:1|max:100',
-            'vehicle_notes'       => 'nullable|string',
+            'registration_number'  => 'nullable|string|max:50',
+            'issuing_authority_id' => 'nullable|exists:issuing_authorities,id',
+            'vehicle_issue_date'   => 'nullable|date',
+            'license_plate'        => 'nullable|string|max:20',
+            'brand'                => 'nullable|string|max:100',
+            'vehicle_type'         => 'nullable|string|max:100',
+            'color'                => 'nullable|string|max:50',
+            'payload'              => 'nullable|numeric|min:0',
+            'engine_number'        => 'nullable|string|max:50',
+            'chassis_number'       => 'nullable|string|max:50',
+            'type_number'          => 'nullable|string|max:50',
+            'engine_capacity'      => 'nullable|numeric|min:0',
+            'seating_capacity'     => 'nullable|integer|min:1|max:100',
+            'vehicle_notes'        => 'nullable|string',
         ];
     }
 
@@ -598,13 +677,13 @@ class AssetController extends Controller
     private function createRelatedData(Asset $asset, Request $request): void
     {
         // Create certificate if real estate
-        if (AssetTypeEnum::isRealEstate($asset->asset_type) && $request->filled('certificate_type')) {
+        if (AssetTypeEnum::isRealEstate($asset->asset_type) && $request->filled('certificate_type_id')) {
             Certificate::create([
-                'asset_id'         => $asset->id,
-                'certificate_type' => $request->certificate_type,
-                'issue_number'     => $request->issue_number,
-                'book_number'      => $request->book_number,
-                'issue_date'       => $request->issue_date,
+                'asset_id'            => $asset->id,
+                'certificate_type_id' => $request->certificate_type_id,
+                'issue_number'        => $request->issue_number,
+                'book_number'         => $request->book_number,
+                'issue_date'          => $request->issue_date,
             ]);
         }
 
@@ -663,21 +742,21 @@ class AssetController extends Controller
         // Create vehicle info
         if (AssetTypeEnum::hasVehicleInfo($asset->asset_type)) {
             Vehicle::create([
-                'asset_id'            => $asset->id,
-                'registration_number' => $request->registration_number,
-                'issuing_authority'   => $request->issuing_authority,
-                'issue_date'          => $request->vehicle_issue_date,
-                'license_plate'       => $request->license_plate,
-                'brand'               => $request->brand,
-                'vehicle_type'        => $request->vehicle_type,
-                'color'               => $request->color,
-                'payload'             => $request->payload,
-                'engine_number'       => $request->engine_number,
-                'chassis_number'      => $request->chassis_number,
-                'type_number'         => $request->type_number,
-                'engine_capacity'     => $request->engine_capacity,
-                'seating_capacity'    => $request->seating_capacity,
-                'notes'               => $request->vehicle_notes,
+                'asset_id'             => $asset->id,
+                'registration_number'  => $request->registration_number,
+                'issuing_authority_id' => $request->issuing_authority_id,
+                'issue_date'           => $request->vehicle_issue_date,
+                'license_plate'        => $request->license_plate,
+                'brand'                => $request->brand,
+                'vehicle_type'         => $request->vehicle_type,
+                'color'                => $request->color,
+                'payload'              => $request->payload,
+                'engine_number'        => $request->engine_number,
+                'chassis_number'       => $request->chassis_number,
+                'type_number'          => $request->type_number,
+                'engine_capacity'      => $request->engine_capacity,
+                'seating_capacity'     => $request->seating_capacity,
+                'notes'                => $request->vehicle_notes,
             ]);
         }
     }
@@ -692,10 +771,10 @@ class AssetController extends Controller
             $asset->certificates()->updateOrCreate(
                 ['asset_id' => $asset->id],
                 [
-                    'certificate_type' => $request->certificate_type,
-                    'issue_number'     => $request->issue_number,
-                    'book_number'      => $request->book_number,
-                    'issue_date'       => $request->issue_date,
+                    'certificate_type_id' => $request->certificate_type_id,
+                    'issue_number'        => $request->issue_number,
+                    'book_number'         => $request->book_number,
+                    'issue_date'          => $request->issue_date,
                 ]
             );
 
@@ -761,20 +840,20 @@ class AssetController extends Controller
             $asset->vehicle()->updateOrCreate(
                 ['asset_id' => $asset->id],
                 [
-                    'registration_number' => $request->registration_number,
-                    'issuing_authority'   => $request->issuing_authority,
-                    'issue_date'          => $request->vehicle_issue_date,
-                    'license_plate'       => $request->license_plate,
-                    'brand'               => $request->brand,
-                    'vehicle_type'        => $request->vehicle_type,
-                    'color'               => $request->color,
-                    'payload'             => $request->payload,
-                    'engine_number'       => $request->engine_number,
-                    'chassis_number'      => $request->chassis_number,
-                    'type_number'         => $request->type_number,
-                    'engine_capacity'     => $request->engine_capacity,
-                    'seating_capacity'    => $request->seating_capacity,
-                    'notes'               => $request->vehicle_notes,
+                    'registration_number'  => $request->registration_number,
+                    'issuing_authority_id' => $request->issuing_authority_id,
+                    'issue_date'           => $request->vehicle_issue_date,
+                    'license_plate'        => $request->license_plate,
+                    'brand'                => $request->brand,
+                    'vehicle_type'         => $request->vehicle_type,
+                    'color'                => $request->color,
+                    'payload'              => $request->payload,
+                    'engine_number'        => $request->engine_number,
+                    'chassis_number'       => $request->chassis_number,
+                    'type_number'          => $request->type_number,
+                    'engine_capacity'      => $request->engine_capacity,
+                    'seating_capacity'     => $request->seating_capacity,
+                    'notes'                => $request->vehicle_notes,
                 ]
             );
         }
@@ -793,7 +872,7 @@ class AssetController extends Controller
         $relations = [];
 
         if (AssetTypeEnum::isRealEstate($assetType)) {
-            $relations[] = 'certificates';
+            $relations[] = 'certificates.certificateType';
             $relations[] = 'landPlots';
         }
 
@@ -806,22 +885,39 @@ class AssetController extends Controller
         }
 
         if (AssetTypeEnum::hasVehicleInfo($assetType)) {
-            $relations[] = 'vehicle';
+            $relations[] = 'vehicle.issuingAuthority';
         }
 
         return $relations;
     }
 
     /**
-     * Format currency value
+     * Get asset display name
      */
-    private function formatCurrency(?float $value): string
+    private function getAssetDisplayName(Asset $asset): string
     {
-        if (is_null($value)) {
-            return 'Chưa xác định';
+        // Tạo tên hiển thị dựa trên loại tài sản và thông tin có sẵn
+        $typeLabel = AssetTypeEnum::label($asset->asset_type);
+
+        if ($asset->landPlots->isNotEmpty()) {
+            $landPlot = $asset->landPlots->first();
+            if ($landPlot->house_number && $landPlot->street_name) {
+                return "{$typeLabel} - {$landPlot->house_number} {$landPlot->street_name}";
+            }
+            if ($landPlot->street_name) {
+                return "{$typeLabel} - {$landPlot->street_name}";
+            }
         }
 
-        return number_format($value, 0, ',', '.') . ' ₫';
+        if ($asset->vehicle && $asset->vehicle->license_plate) {
+            return "{$typeLabel} - {$asset->vehicle->license_plate}";
+        }
+
+        if ($asset->apartment && $asset->apartment->apartment_number) {
+            return "{$typeLabel} - Căn hộ {$asset->apartment->apartment_number}";
+        }
+
+        return "{$typeLabel} #{$asset->id}";
     }
 
     /**
@@ -909,7 +1005,7 @@ class AssetController extends Controller
             $sections['certificate'] = [
                 'title' => 'Thông tin Giấy Chứng Nhận',
                 'data'  => [
-                    'Loại giấy chứng nhận' => CertificateTypeEnum::label($certificate->certificate_type),
+                    'Loại giấy chứng nhận' => $certificate->certificateType ? $certificate->certificateType->name : 'Chưa xác định',
                     'Số phát hành'         => $certificate->issue_number,
                     'Số vào sổ'            => $certificate->book_number,
                     'Ngày cấp'             => $certificate->issue_date?->format('d/m/Y'),
@@ -982,7 +1078,7 @@ class AssetController extends Controller
                 'title' => 'Thông tin Phương Tiện',
                 'data'  => [
                     'Giấy đăng ký số' => $vehicle->registration_number,
-                    'Nơi cấp'         => $vehicle->issuing_authority,
+                    'Nơi cấp'         => $vehicle->issuingAuthority ? $vehicle->issuingAuthority->name : 'Chưa xác định',
                     'Ngày cấp'        => $vehicle->issue_date?->format('d/m/Y'),
                     'Biển kiểm soát'  => $vehicle->license_plate,
                     'Nhãn hiệu'       => $vehicle->brand,
@@ -1006,9 +1102,13 @@ class AssetController extends Controller
      */
     private function canEditAsset(Asset $asset): bool
     {
-                     // Add your authorization logic here
-                     // For example: return auth()->user()->can('update', $asset);
-        return true; // Temporary - replace with actual authorization
+        // Admin có thể edit tất cả
+        if (auth()->user()->hasRole('admin')) {
+            return true;
+        }
+
+        // User chỉ có thể edit tài sản do mình tạo
+        return $asset->created_by === auth()->id();
     }
 
     /**
@@ -1016,9 +1116,13 @@ class AssetController extends Controller
      */
     private function canDeleteAsset(Asset $asset): bool
     {
-                     // Add your authorization logic here
-                     // For example: return auth()->user()->can('delete', $asset);
-        return true; // Temporary - replace with actual authorization
+        // Admin có thể delete tất cả
+        if (auth()->user()->hasRole('admin')) {
+            return true;
+        }
+
+        // User chỉ có thể delete tài sản do mình tạo
+        return $asset->created_by === auth()->id();
     }
 
     /**
@@ -1026,9 +1130,11 @@ class AssetController extends Controller
      */
     public function getStatistics(): JsonResponse
     {
+        $userId = auth()->id();
+
         $stats = [
             'total_assets'      => Asset::count(),
-            'total_value'       => Asset::sum('estimated_value'),
+            'my_assets'         => Asset::where('created_by', $userId)->count(),
             'real_estate_count' => Asset::whereIn('asset_type', [
                 'real_estate_house',
                 'real_estate_apartment',
@@ -1038,6 +1144,17 @@ class AssetController extends Controller
                 'movable_property_car',
                 'movable_property_motorcycle',
             ])->count(),
+            'my_real_estate'    => Asset::where('created_by', $userId)
+                ->whereIn('asset_type', [
+                    'real_estate_house',
+                    'real_estate_apartment',
+                    'real_estate_land_only',
+                ])->count(),
+            'my_vehicles'       => Asset::where('created_by', $userId)
+                ->whereIn('asset_type', [
+                    'movable_property_car',
+                    'movable_property_motorcycle',
+                ])->count(),
             'assets_by_type'    => Asset::selectRaw('asset_type, COUNT(*) as count')
                 ->groupBy('asset_type')
                 ->get()
@@ -1045,15 +1162,27 @@ class AssetController extends Controller
                     return [AssetTypeEnum::label($item->asset_type) => $item->count];
                 }),
             'recent_assets'     => Asset::latest()
+                ->with(['creator:id,name'])
                 ->limit(5)
                 ->get()
                 ->map(function ($asset) {
                     return [
                         'id'         => $asset->id,
-                        'name'       => $asset->asset_name ?: 'Tài sản #' . $asset->id,
+                        'name'       => $this->getAssetDisplayName($asset),
                         'type'       => AssetTypeEnum::label($asset->asset_type),
-                        'value'      => $this->formatCurrency($asset->estimated_value),
+                        'creator'    => $asset->creator ? $asset->creator->name : 'Hệ thống',
                         'created_at' => $asset->created_at->format('d/m/Y H:i'),
+                    ];
+                }),
+            'top_contributors'  => User::withCount('createdAssets')
+                ->having('created_assets_count', '>', 0)
+                ->orderBy('created_assets_count', 'desc')
+                ->limit(5)
+                ->get()
+                ->map(function ($user) {
+                    return [
+                        'name'  => $user->name,
+                        'count' => $user->created_assets_count,
                     ];
                 }),
         ];
@@ -1072,8 +1201,7 @@ class AssetController extends Controller
             return response()->json([]);
         }
 
-        $assets = Asset::where('asset_name', 'like', "%{$query}%")
-            ->orWhere('notes', 'like', "%{$query}%")
+        $assets = Asset::where('notes', 'like', "%{$query}%")
             ->orWhereHas('landPlots', function ($q) use ($query) {
                 $q->where('street_name', 'like', "%{$query}%")
                     ->orWhere('house_number', 'like', "%{$query}%");
@@ -1083,17 +1211,30 @@ class AssetController extends Controller
                     ->orWhere('brand', 'like', "%{$query}%");
             })
             ->limit(10)
+            ->with($this->getBasicRelations())
             ->get()
             ->map(function ($asset) {
                 return [
-                    'id'    => $asset->id,
-                    'text'  => $asset->asset_name ?: 'Tài sản #' . $asset->id,
-                    'type'  => AssetTypeEnum::label($asset->asset_type),
-                    'value' => $this->formatCurrency($asset->estimated_value),
-                    'url'   => route('properties.show', $asset),
+                    'id'   => $asset->id,
+                    'text' => $this->getAssetDisplayName($asset),
+                    'type' => AssetTypeEnum::label($asset->asset_type),
+                    'url'  => route('properties.show', $asset),
                 ];
             });
 
         return response()->json($assets);
+    }
+
+    /**
+     * Get basic relations for loading
+     */
+    private function getBasicRelations(): array
+    {
+        return [
+            'landPlots',
+            'vehicle',
+            'apartment',
+            'house',
+        ];
     }
 }
