@@ -43,7 +43,7 @@ AssetManager.fieldTemplates = {
                                            placeholder="Tìm kiếm loại chứng chỉ..." autocomplete="off">
                                     <button type="button" class="btn btn-outline-primary btn-create-item"
                                             onclick="AssetManager.search.showCreateCertificateTypeModal()">
-                                        <i class="bi bi-plus"></i>
+                                        <i class="fas fa-plus me-2"></i>
                                     </button>
                                 </div>
                                 <input type="hidden" id="certificate_type_id" name="certificate_type_id">
