@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 use App\Models\Address;
 use App\Models\CreditInstitution;
 use App\Models\CreditInstitutionAdditionalInfo;
+use App\Models\IdentityDocument;
 use App\Models\IndividualLitigant;
 use App\Models\Litigant;
 use App\Models\MarriageInformation;
@@ -16,6 +17,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class LitigantController extends Controller
 {
@@ -52,8 +54,8 @@ class LitigantController extends Controller
 
         // Get statistics
         $stats = [
-            'individual'         => Litigant::where('type', 'individual')->count(),
-            'organization'       => Litigant::where('type', 'organization')->count(),
+            'individual' => Litigant::where('type', 'individual')->count(),
+            'organization' => Litigant::where('type', 'organization')->count(),
             'credit_institution' => Litigant::where('type', 'credit_institution')->count(),
         ];
 
@@ -65,7 +67,7 @@ class LitigantController extends Controller
      */
     public function create()
     {
-        $litigantTypes      = Litigant::TYPES;
+        $litigantTypes = Litigant::TYPES;
         $availableLitigants = Litigant::select('id', 'full_name', 'type')->get();
 
         return view('litigants.create', compact('litigantTypes', 'availableLitigants'));
@@ -82,9 +84,9 @@ class LitigantController extends Controller
             // Tạo Litigant chính
             $litigant = Litigant::create([
                 'full_name' => $validated['full_name'],
-                'type'      => $validated['type'],
-                'user_id'   => Auth::id(),
-                'notes'     => $validated['notes'] ?? null,
+                'type' => $validated['type'],
+                'user_id' => Auth::id(),
+                'notes' => $validated['notes'] ?? null,
             ]);
 
             // Xử lý theo loại đương sự
@@ -132,7 +134,7 @@ class LitigantController extends Controller
      */
     public function edit(Litigant $litigant)
     {
-        $litigantTypes      = Litigant::TYPES;
+        $litigantTypes = Litigant::TYPES;
         $availableLitigants = Litigant::where('id', '!=', $litigant->id)
             ->select('id', 'full_name', 'type')
             ->get();
@@ -165,9 +167,9 @@ class LitigantController extends Controller
             // Cập nhật Litigant chính
             $litigant->update([
                 'full_name' => $validated['full_name'],
-                'type'      => $validated['type'],
-                'user_id'   => Auth::id(), // Cập nhật người sửa
-                'notes'     => $validated['notes'] ?? null,
+                'type' => $validated['type'],
+                'user_id' => Auth::id(), // Cập nhật người sửa
+                'notes' => $validated['notes'] ?? null,
             ]);
 
             // Xóa dữ liệu cũ nếu thay đổi loại
@@ -209,8 +211,8 @@ class LitigantController extends Controller
     {
         $rules = [
             'full_name' => 'required|string|max:255',
-            'type'      => 'required|in:' . implode(',', array_keys(Litigant::TYPES)),
-            'notes'     => 'nullable|string',
+            'type' => 'required|in:' . implode(',', array_keys(Litigant::TYPES)),
+            'notes' => 'nullable|string',
         ];
 
         // Validation theo loại
@@ -235,46 +237,46 @@ class LitigantController extends Controller
     private function getIndividualValidationRules()
     {
         return [
-            'birth_date'                           => 'nullable|date',
-            'gender'                               => 'nullable|in:' . implode(',', array_keys(IndividualLitigant::GENDERS)),
-            'nationality'                          => 'nullable|string|max:255',
-            'phone_number'                         => 'nullable|string|max:20',
-            'email'                                => 'nullable|email|max:255',
-            'status'                               => 'nullable|in:' . implode(',', array_keys(IndividualLitigant::STATUSES)),
-            'marital_status'                       => 'nullable|in:' . implode(',', array_keys(IndividualLitigant::MARITAL_STATUSES)),
-            'marriage_certificate_number'          => 'nullable|string|max:255',
-            'marriage_certificate_date'            => 'nullable|date',
-            'marriage_certificate_issued_by'       => 'nullable|string|max:255',
-            'marriage_notes'                       => 'nullable|string',
+            'birth_date' => 'nullable|date',
+            'gender' => 'nullable|in:' . implode(',', array_keys(IndividualLitigant::GENDERS)),
+            'nationality' => 'nullable|string|max:255',
+            'phone_number' => 'nullable|string|max:20',
+            'email' => 'nullable|email|max:255',
+            'status' => 'nullable|in:' . implode(',', array_keys(IndividualLitigant::STATUSES)),
+            'marital_status' => 'nullable|in:' . implode(',', array_keys(IndividualLitigant::MARITAL_STATUSES)),
+            'marriage_certificate_number' => 'nullable|string|max:255',
+            'marriage_certificate_date' => 'nullable|date',
+            'marriage_certificate_issued_by' => 'nullable|string|max:255',
+            'marriage_notes' => 'nullable|string',
 
             // giấy tờ tùy thân
-            'identity_documents'                   => 'nullable|array',
-            'identity_documents.*.document_type'   => 'nullable|in:cccd,cmnd,passport,officer_id,student_card',
+            'identity_documents' => 'nullable|array',
+            'identity_documents.*.document_type' => 'nullable|in:cccd,cmnd,passport,officer_id,student_card',
             'identity_documents.*.document_number' => 'nullable|string|max:255',
-            'identity_documents.*.issue_date'      => 'nullable|date',
-            'identity_documents.*.issued_by'       => 'nullable|string|max:255',
-            'identity_documents.*.school_name'     => 'nullable|string|max:255',
-            'identity_documents.*.academic_year'   => 'nullable|string|max:255',
+            'identity_documents.*.issue_date' => 'nullable|date',
+            'identity_documents.*.issued_by' => 'nullable|string|max:255',
+            'identity_documents.*.school_name' => 'nullable|string|max:255',
+            'identity_documents.*.academic_year' => 'nullable|string|max:255',
 
             // Địa chỉ thường trú
-            'permanent_street_address'             => 'nullable|string|max:255',
-            'permanent_province'                   => 'nullable|string|max:255',
-            'permanent_district'                   => 'nullable|string|max:255',
-            'permanent_ward'                       => 'nullable|string|max:255',
+            'permanent_street_address' => 'nullable|string|max:255',
+            'permanent_province' => 'nullable|string|max:255',
+            'permanent_district' => 'nullable|string|max:255',
+            'permanent_ward' => 'nullable|string|max:255',
 
             // Địa chỉ tạm trú
-            'temporary_street_address'             => 'nullable|string|max:255',
-            'temporary_province'                   => 'nullable|string|max:255',
-            'temporary_district'                   => 'nullable|string|max:255',
-            'temporary_ward'                       => 'nullable|string|max:255',
+            'temporary_street_address' => 'nullable|string|max:255',
+            'temporary_province' => 'nullable|string|max:255',
+            'temporary_district' => 'nullable|string|max:255',
+            'temporary_ward' => 'nullable|string|max:255',
 
             // Thông tin kết hôn
-            'same_household'                       => 'nullable|boolean',
-            'spouse_id'                            => 'nullable|exists:litigants,id',
-            'marriage_registration_number'         => 'nullable|string|max:255',
-            'marriage_issue_date'                  => 'nullable|date',
-            'marriage_issued_by'                   => 'nullable|string|max:255',
-            'is_divorced'                          => 'nullable|boolean',
+            'same_household' => 'nullable|boolean',
+            'spouse_id' => 'nullable|exists:litigants,id',
+            'marriage_registration_number' => 'nullable|string|max:255',
+            'marriage_issue_date' => 'nullable|date',
+            'marriage_issued_by' => 'nullable|string|max:255',
+            'is_divorced' => 'nullable|boolean',
         ];
     }
 
@@ -284,35 +286,35 @@ class LitigantController extends Controller
     private function getOrganizationValidationRules()
     {
         return [
-            'business_type'                  => 'nullable|string|max:255',
-            'org_phone_number'               => 'nullable|string|max:20',
-            'organization_type'              => 'nullable|in:' . implode(',', array_keys(Organization::TYPES)),
-            'license_type'                   => 'nullable|string|max:255',
-            'license_number'                 => 'nullable|string|max:255',
-            'business_registration_date'     => 'nullable|date',
-            'issuing_authority'              => 'nullable|string|max:255',
-            'representative_id'              => 'nullable|exists:litigants,id',
-            'representative_position'        => 'nullable|string|max:255',
+            'business_type' => 'nullable|string|max:255',
+            'org_phone_number' => 'nullable|string|max:20',
+            'organization_type' => 'nullable|in:' . implode(',', array_keys(Organization::TYPES)),
+            'license_type' => 'nullable|string|max:255',
+            'license_number' => 'nullable|string|max:255',
+            'business_registration_date' => 'nullable|date',
+            'issuing_authority' => 'nullable|string|max:255',
+            'representative_id' => 'nullable|exists:litigants,id',
+            'representative_position' => 'nullable|string|max:255',
 
             // Địa chỉ trụ sở
-            'headquarters_street_address'    => 'nullable|string|max:255',
-            'headquarters_province'          => 'nullable|string|max:255',
-            'headquarters_district'          => 'nullable|string|max:255',
-            'headquarters_ward'              => 'nullable|string|max:255',
+            'headquarters_street_address' => 'nullable|string|max:255',
+            'headquarters_province' => 'nullable|string|max:255',
+            'headquarters_district' => 'nullable|string|max:255',
+            'headquarters_ward' => 'nullable|string|max:255',
 
             // Thông tin bổ sung
-            'former_name'                    => 'nullable|string|max:255',
-            'account_number'                 => 'nullable|string|max:255',
-            'fax'                            => 'nullable|string|max:255',
-            'org_email'                      => 'nullable|email|max:255',
-            'website'                        => 'nullable|url|max:255',
-            'change_registration_number'     => 'nullable|integer',
-            'change_registration_date'       => 'nullable|date',
+            'former_name' => 'nullable|string|max:255',
+            'account_number' => 'nullable|string|max:255',
+            'fax' => 'nullable|string|max:255',
+            'org_email' => 'nullable|email|max:255',
+            'website' => 'nullable|url|max:255',
+            'change_registration_number' => 'nullable|integer',
+            'change_registration_date' => 'nullable|date',
 
             // Đại diện đăng ký
             'registration_representative_id' => 'nullable|exists:litigants,id',
-            'registration_position'          => 'nullable|string|max:255',
-            'legal_basis'                    => 'nullable|string',
+            'registration_position' => 'nullable|string|max:255',
+            'legal_basis' => 'nullable|string',
         ];
     }
 
@@ -322,35 +324,35 @@ class LitigantController extends Controller
     private function getCreditInstitutionValidationRules()
     {
         return [
-            'ci_business_type'                  => 'nullable|string|max:255',
-            'ci_phone_number'                   => 'nullable|string|max:20',
-            'ci_organization_type'              => 'nullable|in:' . implode(',', array_keys(CreditInstitution::TYPES)),
-            'ci_license_type'                   => 'nullable|string|max:255',
-            'ci_license_number'                 => 'nullable|string|max:255',
-            'ci_business_registration_date'     => 'nullable|date',
-            'ci_issuing_authority'              => 'nullable|string|max:255',
-            'ci_representative_id'              => 'nullable|exists:litigants,id',
-            'ci_representative_position'        => 'nullable|string|max:255',
+            'ci_business_type' => 'nullable|string|max:255',
+            'ci_phone_number' => 'nullable|string|max:20',
+            'ci_organization_type' => 'nullable|in:' . implode(',', array_keys(CreditInstitution::TYPES)),
+            'ci_license_type' => 'nullable|string|max:255',
+            'ci_license_number' => 'nullable|string|max:255',
+            'ci_business_registration_date' => 'nullable|date',
+            'ci_issuing_authority' => 'nullable|string|max:255',
+            'ci_representative_id' => 'nullable|exists:litigants,id',
+            'ci_representative_position' => 'nullable|string|max:255',
 
             // Địa chỉ trụ sở
-            'ci_headquarters_street_address'    => 'nullable|string|max:255',
-            'ci_headquarters_province'          => 'nullable|string|max:255',
-            'ci_headquarters_district'          => 'nullable|string|max:255',
-            'ci_headquarters_ward'              => 'nullable|string|max:255',
+            'ci_headquarters_street_address' => 'nullable|string|max:255',
+            'ci_headquarters_province' => 'nullable|string|max:255',
+            'ci_headquarters_district' => 'nullable|string|max:255',
+            'ci_headquarters_ward' => 'nullable|string|max:255',
 
             // Thông tin bổ sung
-            'ci_former_name'                    => 'nullable|string|max:255',
-            'ci_account_number'                 => 'nullable|string|max:255',
-            'ci_fax'                            => 'nullable|string|max:255',
-            'ci_email'                          => 'nullable|email|max:255',
-            'ci_website'                        => 'nullable|url|max:255',
-            'ci_change_registration_number'     => 'nullable|integer',
-            'ci_change_registration_date'       => 'nullable|date',
+            'ci_former_name' => 'nullable|string|max:255',
+            'ci_account_number' => 'nullable|string|max:255',
+            'ci_fax' => 'nullable|string|max:255',
+            'ci_email' => 'nullable|email|max:255',
+            'ci_website' => 'nullable|url|max:255',
+            'ci_change_registration_number' => 'nullable|integer',
+            'ci_change_registration_date' => 'nullable|date',
 
             // Đại diện đăng ký
             'ci_registration_representative_id' => 'nullable|exists:litigants,id',
-            'ci_registration_position'          => 'nullable|string|max:255',
-            'ci_legal_basis'                    => 'nullable|string',
+            'ci_registration_position' => 'nullable|string|max:255',
+            'ci_legal_basis' => 'nullable|string',
         ];
     }
 
@@ -361,56 +363,73 @@ class LitigantController extends Controller
     {
         // Tạo individual litigant
         IndividualLitigant::create([
-            'litigant_id'                    => $litigant->id,
-            'birth_date'                     => $data['birth_date'] ?? null,
-            'gender'                         => $data['gender'] ?? null,
-            'nationality'                    => $data['nationality'] ?? null,
-            'phone_number'                   => $data['phone_number'] ?? null,
-            'email'                          => $data['email'] ?? null,
-            'status'                         => $data['status'] ?? 'alive',
-            'marital_status'                 => $data['marital_status'] ?? 'single',
-            'marriage_certificate_number'    => $data['marriage_certificate_number'] ?? null,
-            'marriage_certificate_date'      => $data['marriage_certificate_date'] ?? null,
+            'litigant_id' => $litigant->id,
+            'birth_date' => $data['birth_date'] ?? null,
+            'gender' => $data['gender'] ?? null,
+            'nationality' => $data['nationality'] ?? null,
+            'phone_number' => $data['phone_number'] ?? null,
+            'email' => $data['email'] ?? null,
+            'status' => $data['status'] ?? 'alive',
+            'marital_status' => $data['marital_status'] ?? 'single',
+            'marriage_certificate_number' => $data['marriage_certificate_number'] ?? null,
+            'marriage_certificate_date' => $data['marriage_certificate_date'] ?? null,
             'marriage_certificate_issued_by' => $data['marriage_certificate_issued_by'] ?? null,
-            'marriage_notes'                 => $data['marriage_notes'] ?? null,
+            'marriage_notes' => $data['marriage_notes'] ?? null,
         ]);
 
+        if (!empty($data['identity_documents'])) {
+            foreach ($data['identity_documents'] as $docData) {
+                // Kiểm tra nếu có dữ liệu cần thiết
+                if (!empty($docData['document_type']) && !empty($docData['document_number'])) {
+                    IdentityDocument::create([
+                        'individual_litigant_id' => $litigant->id,
+                        'document_type' => $docData['document_type'],
+                        'document_number' => $docData['document_number'],
+                        'issue_date' => $docData['issue_date'] ?? null,
+                        'issued_by' => $docData['issued_by'] ?? null,
+                        'school_name' => $docData['school_name'] ?? null,
+                        'academic_year' => $docData['academic_year'] ?? null,
+                    ]);
+                }
+            }
+        }
+
         // Tạo địa chỉ thường trú
-        if (! empty($data['permanent_street_address'])) {
+        if (!empty($data['permanent_street_address'])) {
             Address::create([
                 'addressable_type' => Litigant::class,
-                'addressable_id'   => $litigant->id,
-                'address_type'     => Address::TYPE_PERMANENT,
-                'street_address'   => $data['permanent_street_address'],
-                'province'         => $data['permanent_province'] ?? null,
-                'district'         => $data['permanent_district'] ?? null,
-                'ward'             => $data['permanent_ward'] ?? null,
+                'addressable_id' => $litigant->id,
+                'address_type' => Address::TYPE_PERMANENT,
+                'street_address' => $data['permanent_street_address'],
+                'province' => $data['permanent_province'] ?? null,
+                'district' => $data['permanent_district'] ?? null,
+                'ward' => $data['permanent_ward'] ?? null,
             ]);
         }
 
         // Tạo địa chỉ tạm trú
-        if (! empty($data['temporary_street_address'])) {
+        if (!empty($data['temporary_street_address'])) {
             Address::create([
                 'addressable_type' => Litigant::class,
-                'addressable_id'   => $litigant->id,
-                'address_type'     => Address::TYPE_TEMPORARY,
-                'street_address'   => $data['temporary_street_address'],
-                'province'         => $data['temporary_province'] ?? null,
-                'district'         => $data['temporary_district'] ?? null,
-                'ward'             => $data['temporary_ward'] ?? null,
+                'addressable_id' => $litigant->id,
+                'address_type' => Address::TYPE_TEMPORARY,
+                'street_address' => $data['temporary_street_address'],
+                'province' => $data['temporary_province'] ?? null,
+                'district' => $data['temporary_district'] ?? null,
+                'ward' => $data['temporary_ward'] ?? null,
             ]);
         }
 
         // Tạo thông tin kết hôn
-        if (! empty($data['spouse_id']) || ! empty($data['marriage_registration_number'])) {
+        if (!empty($data['spouse_id']) || !empty($data['marriage_registration_number'])) {
             MarriageInformation::create([
-                'litigant_id'                  => $litigant->id,
-                'same_household'               => $data['same_household'] ?? false,
-                'spouse_id'                    => $data['spouse_id'] ?? null,
+                'litigant_id' => $litigant->id,
+                'same_household' => $data['same_household'] ?? false,
+                'spouse_id' => $data['spouse_id'] ?? null,
                 'marriage_registration_number' => $data['marriage_registration_number'] ?? null,
-                'issue_date'                   => $data['marriage_issue_date'] ?? null,
-                'issued_by'                    => $data['marriage_issued_by'] ?? null,
-                'is_divorced'                  => $data['is_divorced'] ?? false,
+                'issue_date' => $data['marriage_issue_date'] ?? null,
+                'issued_by' => $data['marriage_issued_by'] ?? null,
+                'is_divorced' => $data['is_divorced'] ?? false,
             ]);
         }
     }
@@ -422,51 +441,51 @@ class LitigantController extends Controller
     {
         // Tạo organization
         $organization = Organization::create([
-            'litigant_id'                => $litigant->id,
-            'business_type'              => $data['business_type'] ?? null,
-            'phone_number'               => $data['org_phone_number'] ?? null,
-            'organization_type'          => $data['organization_type'] ?? null,
-            'license_type'               => $data['license_type'] ?? null,
-            'license_number'             => $data['license_number'] ?? null,
+            'litigant_id' => $litigant->id,
+            'business_type' => $data['business_type'] ?? null,
+            'phone_number' => $data['org_phone_number'] ?? null,
+            'organization_type' => $data['organization_type'] ?? null,
+            'license_type' => $data['license_type'] ?? null,
+            'license_number' => $data['license_number'] ?? null,
             'business_registration_date' => $data['business_registration_date'] ?? null,
-            'issuing_authority'          => $data['issuing_authority'] ?? null,
-            'representative_id'          => $data['representative_id'] ?? null,
-            'representative_position'    => $data['representative_position'] ?? null,
+            'issuing_authority' => $data['issuing_authority'] ?? null,
+            'representative_id' => $data['representative_id'] ?? null,
+            'representative_position' => $data['representative_position'] ?? null,
         ]);
 
         // Tạo địa chỉ trụ sở
-        if (! empty($data['headquarters_street_address'])) {
+        if (!empty($data['headquarters_street_address'])) {
             Address::create([
                 'addressable_type' => Litigant::class,
-                'addressable_id'   => $litigant->id,
-                'address_type'     => Address::TYPE_HEADQUARTERS,
-                'street_address'   => $data['headquarters_street_address'],
-                'province'         => $data['headquarters_province'] ?? null,
-                'district'         => $data['headquarters_district'] ?? null,
-                'ward'             => $data['headquarters_ward'] ?? null,
+                'addressable_id' => $litigant->id,
+                'address_type' => Address::TYPE_HEADQUARTERS,
+                'street_address' => $data['headquarters_street_address'],
+                'province' => $data['headquarters_province'] ?? null,
+                'district' => $data['headquarters_district'] ?? null,
+                'ward' => $data['headquarters_ward'] ?? null,
             ]);
         }
 
         // Tạo thông tin bổ sung
         OrganizationAdditionalInfo::create([
-            'organization_id'            => $organization->id,
-            'former_name'                => $data['former_name'] ?? null,
-            'account_number'             => $data['account_number'] ?? null,
-            'fax'                        => $data['fax'] ?? null,
-            'email'                      => $data['org_email'] ?? null,
-            'website'                    => $data['website'] ?? null,
+            'organization_id' => $organization->id,
+            'former_name' => $data['former_name'] ?? null,
+            'account_number' => $data['account_number'] ?? null,
+            'fax' => $data['fax'] ?? null,
+            'email' => $data['org_email'] ?? null,
+            'website' => $data['website'] ?? null,
             'change_registration_number' => $data['change_registration_number'] ?? null,
-            'change_registration_date'   => $data['change_registration_date'] ?? null,
+            'change_registration_date' => $data['change_registration_date'] ?? null,
         ]);
 
         // Tạo đại diện đăng ký
-        if (! empty($data['registration_representative_id'])) {
+        if (!empty($data['registration_representative_id'])) {
             RegistrationRepresentative::create([
                 'representable_type' => Organization::class,
-                'representable_id'   => $organization->id,
-                'representative_id'  => $data['registration_representative_id'],
-                'position'           => $data['registration_position'] ?? null,
-                'legal_basis'        => $data['legal_basis'] ?? null,
+                'representable_id' => $organization->id,
+                'representative_id' => $data['registration_representative_id'],
+                'position' => $data['registration_position'] ?? null,
+                'legal_basis' => $data['legal_basis'] ?? null,
             ]);
         }
     }
@@ -478,51 +497,51 @@ class LitigantController extends Controller
     {
         // Tạo credit institution
         $creditInstitution = CreditInstitution::create([
-            'litigant_id'                => $litigant->id,
-            'business_type'              => $data['ci_business_type'] ?? null,
-            'phone_number'               => $data['ci_phone_number'] ?? null,
-            'organization_type'          => $data['ci_organization_type'] ?? null,
-            'license_type'               => $data['ci_license_type'] ?? null,
-            'license_number'             => $data['ci_license_number'] ?? null,
+            'litigant_id' => $litigant->id,
+            'business_type' => $data['ci_business_type'] ?? null,
+            'phone_number' => $data['ci_phone_number'] ?? null,
+            'organization_type' => $data['ci_organization_type'] ?? null,
+            'license_type' => $data['ci_license_type'] ?? null,
+            'license_number' => $data['ci_license_number'] ?? null,
             'business_registration_date' => $data['ci_business_registration_date'] ?? null,
-            'issuing_authority'          => $data['ci_issuing_authority'] ?? null,
-            'representative_id'          => $data['ci_representative_id'] ?? null,
-            'representative_position'    => $data['ci_representative_position'] ?? null,
+            'issuing_authority' => $data['ci_issuing_authority'] ?? null,
+            'representative_id' => $data['ci_representative_id'] ?? null,
+            'representative_position' => $data['ci_representative_position'] ?? null,
         ]);
 
         // Tạo địa chỉ trụ sở
-        if (! empty($data['ci_headquarters_street_address'])) {
+        if (!empty($data['ci_headquarters_street_address'])) {
             Address::create([
                 'addressable_type' => Litigant::class,
-                'addressable_id'   => $litigant->id,
-                'address_type'     => Address::TYPE_HEADQUARTERS,
-                'street_address'   => $data['ci_headquarters_street_address'],
-                'province'         => $data['ci_headquarters_province'] ?? null,
-                'district'         => $data['ci_headquarters_district'] ?? null,
-                'ward'             => $data['ci_headquarters_ward'] ?? null,
+                'addressable_id' => $litigant->id,
+                'address_type' => Address::TYPE_HEADQUARTERS,
+                'street_address' => $data['ci_headquarters_street_address'],
+                'province' => $data['ci_headquarters_province'] ?? null,
+                'district' => $data['ci_headquarters_district'] ?? null,
+                'ward' => $data['ci_headquarters_ward'] ?? null,
             ]);
         }
 
         // Tạo thông tin bổ sung
         CreditInstitutionAdditionalInfo::create([
-            'credit_institution_id'      => $creditInstitution->id,
-            'former_name'                => $data['ci_former_name'] ?? null,
-            'account_number'             => $data['ci_account_number'] ?? null,
-            'fax'                        => $data['ci_fax'] ?? null,
-            'email'                      => $data['ci_email'] ?? null,
-            'website'                    => $data['ci_website'] ?? null,
+            'credit_institution_id' => $creditInstitution->id,
+            'former_name' => $data['ci_former_name'] ?? null,
+            'account_number' => $data['ci_account_number'] ?? null,
+            'fax' => $data['ci_fax'] ?? null,
+            'email' => $data['ci_email'] ?? null,
+            'website' => $data['ci_website'] ?? null,
             'change_registration_number' => $data['ci_change_registration_number'] ?? null,
-            'change_registration_date'   => $data['ci_change_registration_date'] ?? null,
+            'change_registration_date' => $data['ci_change_registration_date'] ?? null,
         ]);
 
         // Tạo đại diện đăng ký
-        if (! empty($data['ci_registration_representative_id'])) {
+        if (!empty($data['ci_registration_representative_id'])) {
             RegistrationRepresentative::create([
                 'representable_type' => CreditInstitution::class,
-                'representable_id'   => $creditInstitution->id,
-                'representative_id'  => $data['ci_registration_representative_id'],
-                'position'           => $data['ci_registration_position'] ?? null,
-                'legal_basis'        => $data['ci_legal_basis'] ?? null,
+                'representable_id' => $creditInstitution->id,
+                'representative_id' => $data['ci_registration_representative_id'],
+                'position' => $data['ci_registration_position'] ?? null,
+                'legal_basis' => $data['ci_legal_basis'] ?? null,
             ]);
         }
     }
@@ -536,34 +555,36 @@ class LitigantController extends Controller
         $litigant->individualLitigant()->updateOrCreate(
             ['litigant_id' => $litigant->id],
             [
-                'birth_date'                     => $data['birth_date'] ?? null,
-                'gender'                         => $data['gender'] ?? null,
-                'nationality'                    => $data['nationality'] ?? null,
-                'phone_number'                   => $data['phone_number'] ?? null,
-                'email'                          => $data['email'] ?? null,
-                'status'                         => $data['status'] ?? 'alive',
-                'marital_status'                 => $data['marital_status'] ?? 'single',
-                'marriage_certificate_number'    => $data['marriage_certificate_number'] ?? null,
-                'marriage_certificate_date'      => $data['marriage_certificate_date'] ?? null,
+                'birth_date' => $data['birth_date'] ?? null,
+                'gender' => $data['gender'] ?? null,
+                'nationality' => $data['nationality'] ?? null,
+                'phone_number' => $data['phone_number'] ?? null,
+                'email' => $data['email'] ?? null,
+                'status' => $data['status'] ?? 'alive',
+                'marital_status' => $data['marital_status'] ?? 'single',
+                'marriage_certificate_number' => $data['marriage_certificate_number'] ?? null,
+                'marriage_certificate_date' => $data['marriage_certificate_date'] ?? null,
                 'marriage_certificate_issued_by' => $data['marriage_certificate_issued_by'] ?? null,
-                'marriage_notes'                 => $data['marriage_notes'] ?? null,
+                'marriage_notes' => $data['marriage_notes'] ?? null,
             ]
         );
+
+        $this->updateIdentityDocuments($litigant, $data['identity_documents'] ?? []);
 
         // Cập nhật địa chỉ
         $this->updateAddresses($litigant, $data, 'individual');
 
         // Cập nhật thông tin kết hôn
-        if (! empty($data['spouse_id']) || ! empty($data['marriage_registration_number'])) {
+        if (!empty($data['spouse_id']) || !empty($data['marriage_registration_number'])) {
             $litigant->marriageInformation()->updateOrCreate(
                 ['litigant_id' => $litigant->id],
                 [
-                    'same_household'               => $data['same_household'] ?? false,
-                    'spouse_id'                    => $data['spouse_id'] ?? null,
+                    'same_household' => $data['same_household'] ?? false,
+                    'spouse_id' => $data['spouse_id'] ?? null,
                     'marriage_registration_number' => $data['marriage_registration_number'] ?? null,
-                    'issue_date'                   => $data['marriage_issue_date'] ?? null,
-                    'issued_by'                    => $data['marriage_issued_by'] ?? null,
-                    'is_divorced'                  => $data['is_divorced'] ?? false,
+                    'issue_date' => $data['marriage_issue_date'] ?? null,
+                    'issued_by' => $data['marriage_issued_by'] ?? null,
+                    'is_divorced' => $data['is_divorced'] ?? false,
                 ]
             );
         }
@@ -578,15 +599,15 @@ class LitigantController extends Controller
         $organization = $litigant->organization()->updateOrCreate(
             ['litigant_id' => $litigant->id],
             [
-                'business_type'              => $data['business_type'] ?? null,
-                'phone_number'               => $data['org_phone_number'] ?? null,
-                'organization_type'          => $data['organization_type'] ?? null,
-                'license_type'               => $data['license_type'] ?? null,
-                'license_number'             => $data['license_number'] ?? null,
+                'business_type' => $data['business_type'] ?? null,
+                'phone_number' => $data['org_phone_number'] ?? null,
+                'organization_type' => $data['organization_type'] ?? null,
+                'license_type' => $data['license_type'] ?? null,
+                'license_number' => $data['license_number'] ?? null,
                 'business_registration_date' => $data['business_registration_date'] ?? null,
-                'issuing_authority'          => $data['issuing_authority'] ?? null,
-                'representative_id'          => $data['representative_id'] ?? null,
-                'representative_position'    => $data['representative_position'] ?? null,
+                'issuing_authority' => $data['issuing_authority'] ?? null,
+                'representative_id' => $data['representative_id'] ?? null,
+                'representative_position' => $data['representative_position'] ?? null,
             ]
         );
 
@@ -597,27 +618,27 @@ class LitigantController extends Controller
         $organization->additionalInfo()->updateOrCreate(
             ['organization_id' => $organization->id],
             [
-                'former_name'                => $data['former_name'] ?? null,
-                'account_number'             => $data['account_number'] ?? null,
-                'fax'                        => $data['fax'] ?? null,
-                'email'                      => $data['org_email'] ?? null,
-                'website'                    => $data['website'] ?? null,
+                'former_name' => $data['former_name'] ?? null,
+                'account_number' => $data['account_number'] ?? null,
+                'fax' => $data['fax'] ?? null,
+                'email' => $data['org_email'] ?? null,
+                'website' => $data['website'] ?? null,
                 'change_registration_number' => $data['change_registration_number'] ?? null,
-                'change_registration_date'   => $data['change_registration_date'] ?? null,
+                'change_registration_date' => $data['change_registration_date'] ?? null,
             ]
         );
 
         // Cập nhật đại diện đăng ký
-        if (! empty($data['registration_representative_id'])) {
+        if (!empty($data['registration_representative_id'])) {
             $organization->registrationRepresentatives()->updateOrCreate(
                 [
                     'representable_type' => Organization::class,
-                    'representable_id'   => $organization->id,
+                    'representable_id' => $organization->id,
                 ],
                 [
                     'representative_id' => $data['registration_representative_id'],
-                    'position'          => $data['registration_position'] ?? null,
-                    'legal_basis'       => $data['legal_basis'] ?? null,
+                    'position' => $data['registration_position'] ?? null,
+                    'legal_basis' => $data['legal_basis'] ?? null,
                 ]
             );
         }
@@ -632,15 +653,15 @@ class LitigantController extends Controller
         $creditInstitution = $litigant->creditInstitution()->updateOrCreate(
             ['litigant_id' => $litigant->id],
             [
-                'business_type'              => $data['ci_business_type'] ?? null,
-                'phone_number'               => $data['ci_phone_number'] ?? null,
-                'organization_type'          => $data['ci_organization_type'] ?? null,
-                'license_type'               => $data['ci_license_type'] ?? null,
-                'license_number'             => $data['ci_license_number'] ?? null,
+                'business_type' => $data['ci_business_type'] ?? null,
+                'phone_number' => $data['ci_phone_number'] ?? null,
+                'organization_type' => $data['ci_organization_type'] ?? null,
+                'license_type' => $data['ci_license_type'] ?? null,
+                'license_number' => $data['ci_license_number'] ?? null,
                 'business_registration_date' => $data['ci_business_registration_date'] ?? null,
-                'issuing_authority'          => $data['ci_issuing_authority'] ?? null,
-                'representative_id'          => $data['ci_representative_id'] ?? null,
-                'representative_position'    => $data['ci_representative_position'] ?? null,
+                'issuing_authority' => $data['ci_issuing_authority'] ?? null,
+                'representative_id' => $data['ci_representative_id'] ?? null,
+                'representative_position' => $data['ci_representative_position'] ?? null,
             ]
         );
 
@@ -651,27 +672,27 @@ class LitigantController extends Controller
         $creditInstitution->additionalInfo()->updateOrCreate(
             ['credit_institution_id' => $creditInstitution->id],
             [
-                'former_name'                => $data['ci_former_name'] ?? null,
-                'account_number'             => $data['ci_account_number'] ?? null,
-                'fax'                        => $data['ci_fax'] ?? null,
-                'email'                      => $data['ci_email'] ?? null,
-                'website'                    => $data['ci_website'] ?? null,
+                'former_name' => $data['ci_former_name'] ?? null,
+                'account_number' => $data['ci_account_number'] ?? null,
+                'fax' => $data['ci_fax'] ?? null,
+                'email' => $data['ci_email'] ?? null,
+                'website' => $data['ci_website'] ?? null,
                 'change_registration_number' => $data['ci_change_registration_number'] ?? null,
-                'change_registration_date'   => $data['ci_change_registration_date'] ?? null,
+                'change_registration_date' => $data['ci_change_registration_date'] ?? null,
             ]
         );
 
         // Cập nhật đại diện đăng ký
-        if (! empty($data['ci_registration_representative_id'])) {
+        if (!empty($data['ci_registration_representative_id'])) {
             $creditInstitution->registrationRepresentatives()->updateOrCreate(
                 [
                     'representable_type' => CreditInstitution::class,
-                    'representable_id'   => $creditInstitution->id,
+                    'representable_id' => $creditInstitution->id,
                 ],
                 [
                     'representative_id' => $data['ci_registration_representative_id'],
-                    'position'          => $data['ci_registration_position'] ?? null,
-                    'legal_basis'       => $data['ci_legal_basis'] ?? null,
+                    'position' => $data['ci_registration_position'] ?? null,
+                    'legal_basis' => $data['ci_legal_basis'] ?? null,
                 ]
             );
         }
@@ -685,27 +706,27 @@ class LitigantController extends Controller
         switch ($type) {
             case 'individual':
                 // Cập nhật địa chỉ thường trú
-                if (! empty($data['permanent_street_address'])) {
+                if (!empty($data['permanent_street_address'])) {
                     $litigant->addresses()->updateOrCreate(
                         ['address_type' => Address::TYPE_PERMANENT],
                         [
                             'street_address' => $data['permanent_street_address'],
-                            'province'       => $data['permanent_province'] ?? null,
-                            'district'       => $data['permanent_district'] ?? null,
-                            'ward'           => $data['permanent_ward'] ?? null,
+                            'province' => $data['permanent_province'] ?? null,
+                            'district' => $data['permanent_district'] ?? null,
+                            'ward' => $data['permanent_ward'] ?? null,
                         ]
                     );
                 }
 
                 // Cập nhật địa chỉ tạm trú
-                if (! empty($data['temporary_street_address'])) {
+                if (!empty($data['temporary_street_address'])) {
                     $litigant->addresses()->updateOrCreate(
                         ['address_type' => Address::TYPE_TEMPORARY],
                         [
                             'street_address' => $data['temporary_street_address'],
-                            'province'       => $data['temporary_province'] ?? null,
-                            'district'       => $data['temporary_district'] ?? null,
-                            'ward'           => $data['temporary_ward'] ?? null,
+                            'province' => $data['temporary_province'] ?? null,
+                            'district' => $data['temporary_district'] ?? null,
+                            'ward' => $data['temporary_ward'] ?? null,
                         ]
                     );
                 }
@@ -713,14 +734,14 @@ class LitigantController extends Controller
 
             case 'organization':
                 // Cập nhật địa chỉ trụ sở
-                if (! empty($data['headquarters_street_address'])) {
+                if (!empty($data['headquarters_street_address'])) {
                     $litigant->addresses()->updateOrCreate(
                         ['address_type' => Address::TYPE_HEADQUARTERS],
                         [
                             'street_address' => $data['headquarters_street_address'],
-                            'province'       => $data['headquarters_province'] ?? null,
-                            'district'       => $data['headquarters_district'] ?? null,
-                            'ward'           => $data['headquarters_ward'] ?? null,
+                            'province' => $data['headquarters_province'] ?? null,
+                            'district' => $data['headquarters_district'] ?? null,
+                            'ward' => $data['headquarters_ward'] ?? null,
                         ]
                     );
                 }
@@ -728,14 +749,14 @@ class LitigantController extends Controller
 
             case 'credit_institution':
                 // Cập nhật địa chỉ trụ sở
-                if (! empty($data['ci_headquarters_street_address'])) {
+                if (!empty($data['ci_headquarters_street_address'])) {
                     $litigant->addresses()->updateOrCreate(
                         ['address_type' => Address::TYPE_HEADQUARTERS],
                         [
                             'street_address' => $data['ci_headquarters_street_address'],
-                            'province'       => $data['ci_headquarters_province'] ?? null,
-                            'district'       => $data['ci_headquarters_district'] ?? null,
-                            'ward'           => $data['ci_headquarters_ward'] ?? null,
+                            'province' => $data['ci_headquarters_province'] ?? null,
+                            'district' => $data['ci_headquarters_district'] ?? null,
+                            'ward' => $data['ci_headquarters_ward'] ?? null,
                         ]
                     );
                 }
@@ -754,6 +775,9 @@ class LitigantController extends Controller
             // Xóa dữ liệu cũ theo loại
             switch ($currentType) {
                 case Litigant::TYPE_INDIVIDUAL:
+                    if ($litigant->individualLitigant) {
+                        $litigant->individualLitigant->identityDocuments()->delete();
+                    }
                     $litigant->individualLitigant()->delete();
                     $litigant->marriageInformation()->delete();
                     break;
@@ -778,12 +802,80 @@ class LitigantController extends Controller
         }
     }
 
+    /**
+     * Update identity documents intelligently
+     */
+    private function updateIdentityDocuments($individualLitigant, array $newDocuments)
+    {
+        // Log để debug
+        Log::info('Updating identity documents for individual: ' . $individualLitigant->id);
+        Log::info('New documents data:', $newDocuments);
+
+        // Lấy danh sách documents hiện tại
+        $existingDocuments = $individualLitigant->identityDocuments()->get();
+
+        // Tạo array để track các documents được gửi lên
+        $submittedDocumentIds = [];
+
+        foreach ($newDocuments as $index => $docData) {
+            // Bỏ qua nếu không có dữ liệu cần thiết
+            if (empty($docData['document_type']) && empty($docData['document_number'])) {
+                continue;
+            }
+
+            // Nếu có ID, đây là document đang được cập nhật
+            if (!empty($docData['id'])) {
+                $existingDoc = $existingDocuments->find($docData['id']);
+
+                if ($existingDoc) {
+                    // Cập nhật document hiện có
+                    $existingDoc->update([
+                        'document_type' => $docData['document_type'] ?? $existingDoc->document_type,
+                        'document_number' => $docData['document_number'] ?? $existingDoc->document_number,
+                        'issue_date' => $docData['issue_date'] ?? $existingDoc->issue_date,
+                        'issued_by' => $docData['issued_by'] ?? $existingDoc->issued_by,
+                        'school_name' => $docData['school_name'] ?? $existingDoc->school_name,
+                        'academic_year' => $docData['academic_year'] ?? $existingDoc->academic_year,
+                    ]);
+
+                    $submittedDocumentIds[] = $existingDoc->id;
+                    Log::info('Updated existing document: ' . $existingDoc->id);
+                }
+            } else {
+                // Không có ID = document mới, tạo mới
+                if (!empty($docData['document_type']) && !empty($docData['document_number'])) {
+                    $newDoc = IdentityDocument::create([
+                        'individual_litigant_id' => $individualLitigant->id,
+                        'document_type' => $docData['document_type'],
+                        'document_number' => $docData['document_number'],
+                        'issue_date' => $docData['issue_date'] ?? null,
+                        'issued_by' => $docData['issued_by'] ?? null,
+                        'school_name' => $docData['school_name'] ?? null,
+                        'academic_year' => $docData['academic_year'] ?? null,
+                    ]);
+
+                    $submittedDocumentIds[] = $newDoc->id;
+                    Log::info('Created new document: ' . $newDoc->id);
+                }
+            }
+        }
+
+        // Xóa các documents không được gửi lên (user đã xóa)
+        $documentsToDelete = $existingDocuments->whereNotIn('id', $submittedDocumentIds);
+        foreach ($documentsToDelete as $doc) {
+            Log::info('Deleting document: ' . $doc->id);
+            $doc->delete();
+        }
+
+        Log::info('Identity documents update completed');
+    }
+
     //search litigants
     public function searchLitigants(Request $request)
     {
         $query = $request->get('q');
 
-        if (! $query || strlen($query) < 2) {
+        if (!$query || strlen($query) < 2) {
             return response()->json([]);
         }
 
@@ -800,12 +892,12 @@ class LitigantController extends Controller
 
         return response()->json($litigants->map(function ($litigant) {
             return [
-                'id'                 => $litigant->id,
-                'full_name'          => $litigant->full_name,
-                'type'               => $litigant->type,
+                'id' => $litigant->id,
+                'full_name' => $litigant->full_name,
+                'type' => $litigant->type,
                 'identity_documents' => $litigant->individualLitigant?->identityDocuments?->map(function ($doc) {
                     return [
-                        'document_type'   => $doc->document_type,
+                        'document_type' => $doc->document_type,
                         'document_number' => $doc->document_number,
                     ];
                 }) ?? [],

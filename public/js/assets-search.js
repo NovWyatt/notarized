@@ -13,7 +13,10 @@ AssetManager.search = {
         // Certificate type search
         this.initSearchInput('certificate_type_search', 'certificate_type_results', 'certificate_type_id', 'searchCertificateTypes');
 
-        // Issuing authority search
+        // Certificate issuing authority search
+        this.initSearchInput('certificate_issuing_authority_search', 'certificate_issuing_authority_results', 'certificate_issuing_authority_id', 'searchIssuingAuthorities');
+
+        // Vehicle issuing authority search
         this.initSearchInput('issuing_authority_search', 'issuing_authority_results', 'issuing_authority_id', 'searchIssuingAuthorities');
     },
 
@@ -105,13 +108,16 @@ AssetManager.search = {
 
     // Display search results
     displayResults: function(results, resultsContainer, hiddenInput) {
-        if (!results || results.length === 0) {
+        // Handle both direct array and data.data format
+        const items = Array.isArray(results) ? results : (results.data || []);
+
+        if (!items || items.length === 0) {
             resultsContainer.innerHTML = '<div class="search-result-item text-muted">Không tìm thấy kết quả</div>';
             resultsContainer.style.display = 'block';
             return;
         }
 
-        const html = results.map(item =>
+        const html = items.map(item =>
             `<div class="search-result-item" data-id="${item.id}" data-name="${item.name}">
                 <strong>${item.name}</strong>
                 ${item.description ? `<br><small class="text-muted">${item.description}</small>` : ''}
@@ -162,6 +168,8 @@ AssetManager.search = {
         const resultsId = resultsContainer.id;
         if (resultsId.includes('certificate_type')) {
             return document.getElementById('certificate_type_search');
+        } else if (resultsId.includes('certificate_issuing_authority')) {
+            return document.getElementById('certificate_issuing_authority_search');
         } else if (resultsId.includes('issuing_authority')) {
             return document.getElementById('issuing_authority_search');
         }
@@ -246,11 +254,10 @@ AssetManager.search = {
             e.preventDefault();
 
             const formData = new FormData(form);
+            // FIX: Sử dụng 'address' thay vì 'description' để match với controller
             const data = {
                 name: formData.get('name'),
-                address: formData.get('address'),
-                phone: formData.get('phone'),
-                email: formData.get('email')
+                address: formData.get('description') // Field name trong form là 'description' nhưng server expect 'address'
             };
 
             this.createIssuingAuthority(data, modal);
@@ -310,13 +317,20 @@ AssetManager.search = {
         .then(response => {
             AssetManager.utils.showSuccess('Tạo cơ quan cấp phát thành công!');
 
-            // Update search input
-            const searchInput = document.getElementById('issuing_authority_search');
-            const hiddenInput = document.getElementById('issuing_authority_id');
+            // Update both certificate and vehicle issuing authority inputs if they exist
+            const certificateSearchInput = document.getElementById('certificate_issuing_authority_search');
+            const certificateHiddenInput = document.getElementById('certificate_issuing_authority_id');
+            const vehicleSearchInput = document.getElementById('issuing_authority_search');
+            const vehicleHiddenInput = document.getElementById('issuing_authority_id');
 
-            if (searchInput && hiddenInput) {
-                searchInput.value = response.issuingAuthority.name;
-                hiddenInput.value = response.issuingAuthority.id;
+            if (certificateSearchInput && certificateHiddenInput) {
+                certificateSearchInput.value = response.issuingAuthority.name;
+                certificateHiddenInput.value = response.issuingAuthority.id;
+            }
+
+            if (vehicleSearchInput && vehicleHiddenInput) {
+                vehicleSearchInput.value = response.issuingAuthority.name;
+                vehicleHiddenInput.value = response.issuingAuthority.id;
             }
 
             // Close modal and reset form
@@ -345,6 +359,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         // Check if this is a certificate or vehicle section
                         if (node.querySelector && (
                             node.querySelector('#certificate_type_search') ||
+                            node.querySelector('#certificate_issuing_authority_search') ||
                             node.querySelector('#issuing_authority_search')
                         )) {
                             // Reinitialize search for new elements

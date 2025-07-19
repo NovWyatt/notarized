@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Phần mềm hỗ trợ công chứng - VPCC Nguyễn Thị Như Trang</title>
+    <title>Phần Mềm Soạn Hợp Đồng Công Chứng & Chứng Thực</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <!-- Favicon -->
@@ -273,12 +273,12 @@
                             <li class="nav-item dropdown">
                                 <a class="py-0 nav-link d-flex align-items-center" href="#" id="navbarDropdown"
                                     role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <img src="{{ asset('company_logo.png') }}" alt="User-Profile"
-                                        class="theme-color-default-img img-fluid avatar avatar-50 avatar-rounded">
+                                    {{-- <img src="{{ asset('company_logo.png') }}" alt="User-Profile"
+                                        class="theme-color-default-img img-fluid avatar avatar-50 avatar-rounded"> --}}
                                     <div class="caption ms-3 d-none d-md-block ">
                                         @auth
                                             <h6 class="mb-0 caption-title">{{ Auth::user()->name }}</h6>
-                                            <p class="mb-0 caption-sub-title">{{ Auth::user()->getRoleNames()->first() }}
+                                            <p class="mb-0 caption-sub-title">{{ Auth::user()->department ?? 'chưa có văn phòng' }}
                                             </p>
                                         @endauth
                                     </div>

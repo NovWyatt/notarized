@@ -34,6 +34,18 @@ class Litigant extends Model
     ];
 
     // Relationships
+
+    public function identityDocuments()
+    {
+        return $this->hasManyThrough(
+            IdentityDocument::class,
+            IndividualLitigant::class,
+            'litigant_id',            // Foreign key on IndividualLitigant table
+            'individual_litigant_id', // Foreign key on IdentityDocument table
+            'id',                     // Local key on Litigant table
+            'id'                      // Local key on IndividualLitigant table
+        );
+    }
     public function user()
     {
         return $this->belongsTo(User::class);

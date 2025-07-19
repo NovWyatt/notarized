@@ -31,7 +31,7 @@ class IssuingAuthorityController extends Controller
             return [
                 'id' => $authority->id,
                 'name' => $authority->name,
-                'description' => $authority->address ? "Địa chỉ: {$authority->address}" : null
+                'description' => $authority->address ? "Ghi chú: {$authority->address}" : null
             ];
         });
 
@@ -45,9 +45,7 @@ class IssuingAuthorityController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255|unique:issuing_authorities,name',
-            'address' => 'nullable|string|max:1000',
-            'phone' => 'nullable|string|max:20',
-            'email' => 'nullable|email|max:255'
+            'address' => 'nullable|string|max:1000'
         ]);
 
         if ($validator->fails()) {
@@ -60,9 +58,7 @@ class IssuingAuthorityController extends Controller
         try {
             $authority = IssuingAuthority::create([
                 'name' => $request->name,
-                'address' => $request->address,
-                'phone' => $request->phone,
-                'email' => $request->email
+                'address' => $request->address
             ]);
 
             return response()->json([

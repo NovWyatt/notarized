@@ -152,9 +152,6 @@
                             <button type="submit" class="btn btn-primary">
                                 <i class="bi bi-check-circle me-2"></i>Tạo Tài sản
                             </button>
-                            <button type="button" class="btn btn-outline-secondary ms-2" onclick="resetForm()">
-                                <i class="bi bi-arrow-clockwise me-2"></i>Đặt lại
-                            </button>
                         </div>
                         <div class="col-md-6 text-end">
                             <a href="{{ route('properties.index') }}" class="btn btn-outline-danger">
@@ -172,20 +169,21 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Tạo loại chứng chỉ mới</h5>
+                    <h5 class="modal-title">Tạo tên gọi GCNSQH tài sản</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <form id="createCertificateTypeForm">
                     <div class="modal-body">
                         <div class="mb-3">
-                            <label for="new_certificate_name" class="form-label">Tên loại chứng chỉ <span class="text-danger">*</span></label>
+                            <label for="new_certificate_name" class="form-label">Tên gọi GCNSQH tài sản<span
+                                    class="text-danger">*</span></label>
                             <input type="text" class="form-control" id="new_certificate_name" name="name" required
-                                   placeholder="Nhập tên loại chứng chỉ...">
+                                placeholder="Nhập tên tên gọi GCNSQH tài sản...">
                         </div>
                         <div class="mb-3">
-                            <label for="new_certificate_description" class="form-label">Mô tả</label>
+                            <label for="new_certificate_description" class="form-label">Ghi chú</label>
                             <textarea class="form-control" id="new_certificate_description" name="description" rows="2"
-                                      placeholder="Mô tả về loại chứng chỉ..."></textarea>
+                                placeholder="Ghi chú tên gọi GCNSQH tài sản..."></textarea>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -210,30 +208,15 @@
                 <form id="createIssuingAuthorityForm">
                     <div class="modal-body">
                         <div class="mb-3">
-                            <label for="new_authority_name" class="form-label">Tên cơ quan <span class="text-danger">*</span></label>
+                            <label for="new_authority_name" class="form-label">Tên cơ quan <span
+                                    class="text-danger">*</span></label>
                             <input type="text" class="form-control" id="new_authority_name" name="name" required
-                                   placeholder="Nhập tên cơ quan...">
+                                placeholder="Nhập tên cơ quan...">
                         </div>
                         <div class="mb-3">
-                            <label for="new_authority_address" class="form-label">Địa chỉ</label>
-                            <textarea class="form-control" id="new_authority_address" name="address" rows="2"
-                                      placeholder="Địa chỉ cơ quan..."></textarea>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="new_authority_phone" class="form-label">Điện thoại</label>
-                                    <input type="text" class="form-control" id="new_authority_phone" name="phone"
-                                           placeholder="Số điện thoại...">
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="new_authority_email" class="form-label">Email</label>
-                                    <input type="email" class="form-control" id="new_authority_email" name="email"
-                                           placeholder="Email...">
-                                </div>
-                            </div>
+                            <label for="new_authority_description" class="form-label">Ghi Chú</label>
+                            <textarea class="form-control" id="new_authority_description" name="description" rows="2"
+                                placeholder="Ghi chú..."></textarea>
                         </div>
                     </div>
                     <div class="modal-footer">

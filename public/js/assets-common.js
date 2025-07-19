@@ -34,13 +34,13 @@ AssetManager.fieldTemplates = {
             </div>
             <div class="card-body">
                 <div class="row">
-                    <div class="col-md-3">
+                    <div class="col-md-4">
                         <div class="mb-3">
-                            <label for="certificate_type_id" class="form-label">Loại giấy chứng nhận</label>
+                            <label for="certificate_type_id" class="form-label">Tên gọi GCNSQH tài sản</label>
                             <div class="search-dropdown">
                                 <div class="input-group">
                                     <input type="text" class="form-control search-input" id="certificate_type_search"
-                                           placeholder="Tìm kiếm loại chứng chỉ..." autocomplete="off">
+                                           placeholder="Tìm kiếm tên gọi GCNSQH tài sản..." autocomplete="off">
                                     <button type="button" class="btn btn-outline-primary btn-create-item"
                                             onclick="AssetManager.search.showCreateCertificateTypeModal()">
                                         <i class="fas fa-plus me-2"></i>
@@ -51,14 +51,31 @@ AssetManager.fieldTemplates = {
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label for="certificate_issuing_authority_id" class="form-label">Nơi cấp</label>
+                            <div class="search-dropdown">
+                                <div class="input-group">
+                                    <input type="text" class="form-control search-input" id="certificate_issuing_authority_search"
+                                           placeholder="Tìm kiếm nơi cấp..." autocomplete="off">
+                                    <button type="button" class="btn btn-outline-primary btn-create-item"
+                                            onclick="AssetManager.search.showCreateIssuingAuthorityModal()">
+                                        <i class="fas fa-plus me-2"></i>
+                                    </button>
+                                </div>
+                                <input type="hidden" id="certificate_issuing_authority_id" name="certificate_issuing_authority_id">
+                                <div class="search-results" id="certificate_issuing_authority_results"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
                         <div class="mb-3">
                             <label for="issue_number" class="form-label">Số phát hành</label>
                             <input type="text" class="form-control" id="issue_number" name="issue_number"
                                    placeholder="Nhập số phát hành">
                         </div>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <div class="mb-3">
                             <label for="book_number" class="form-label">Số vào sổ</label>
                             <input type="text" class="form-control" id="book_number" name="book_number"
@@ -415,7 +432,7 @@ AssetManager.fieldTemplates = {
                                            placeholder="Tìm kiếm cơ quan cấp phát..." autocomplete="off">
                                     <button type="button" class="btn btn-outline-primary btn-create-item"
                                             onclick="AssetManager.search.showCreateIssuingAuthorityModal()">
-                                        <i class="bi bi-plus"></i>
+                                        <i class="fas fa-plus me-2"></i>
                                     </button>
                                 </div>
                                 <input type="hidden" id="issuing_authority_id" name="issuing_authority_id">

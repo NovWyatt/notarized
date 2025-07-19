@@ -2,14 +2,20 @@
     color: black !important;
 }
 
-.sidebar-base .nav-item .nav-link:not(.disabled){
+.sidebar-base .nav-item .nav-link:not(.disabled) {
     color: black !important;
 }
 
 .form-select {
     color: black !important;
+    border: 1px solid #797676 !important;
 }
 
 .form-control {
     color: black !important;
+    border: 1px solid #797676 !important;
+}
+
+.rounded {
+    border: var(--bs-border-width) var(--bs-border-style) #797676 !important;
 }

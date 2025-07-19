@@ -14,6 +14,7 @@ class Certificate extends Model
     protected $fillable = [
         'asset_id',
         'certificate_type_id',
+        'issuing_authority_id',
         'issue_number',
         'book_number',
         'issue_date'
@@ -36,5 +37,10 @@ class Certificate extends Model
     public function certificateType(): BelongsTo
     {
         return $this->belongsTo(CertificateType::class);
+    }
+
+    public function issuingAuthority(): BelongsTo
+    {
+        return $this->belongsTo(IssuingAuthority::class);
     }
 }

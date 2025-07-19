@@ -258,7 +258,7 @@
                     </div>
                 </div>
 
-                <!-- Identity Documents Section -->
+                <!-- Identity Documents Section - FIXED VERSION -->
                 <div class="card mb-4">
                     <div class="card-header">
                         <h5 class="card-title mb-0">
@@ -282,6 +282,10 @@
                                     <div class="identity-document-item border rounded p-3 mb-3">
                                         <div class="row align-items-center">
                                             <div class="col-md-11">
+                                                <!-- THÊM HIDDEN INPUT CHO ID -->
+                                                <input type="hidden" name="identity_documents[{{ $index }}][id]"
+                                                    value="{{ $document->id }}">
+
                                                 <div class="row">
                                                     <div class="col-md-6">
                                                         <div class="form-floating mb-3">
@@ -392,7 +396,7 @@
                                                         <select class="form-select document-type-select"
                                                             name="identity_documents[0][document_type]"
                                                             onchange="toggleDocumentFields(this, 0)">
-                                                            <option value="">Select Document Type</option>
+                                                            <option value="">Chọn loại giấy tờ</option>
                                                             <option value="cccd">Căn cước công dân (12 số)</option>
                                                             <option value="cmnd">Chứng minh nhân dân (9 số)</option>
                                                             <option value="passport">Hộ chiếu</option>
@@ -1334,8 +1338,17 @@
     <script src="{{ asset('js/litigant-form.js') }}?v={{ time() }}"></script>
     <script src="{{ asset('js/litigant-date.js') }}?v={{ time() }}"></script>
     <script>
-        // Override documentCounter for edit form
-        documentCounter =
-            {{ $individual && $individual->identityDocuments ? $individual->identityDocuments->count() : 1 }};
+        // Set documentCounter properly for edit form
+        @if ($individual && $individual->identityDocuments)
+            documentCounter = {{ $individual->identityDocuments->count() }};
+        @else
+            documentCounter = 1;
+        @endif
+
+        // Debug existing documents
+        console.log('Edit form - documentCounter:', documentCounter);
+        @if ($individual && $individual->identityDocuments)
+            console.log('Existing documents:', @json($individual->identityDocuments));
+        @endif
     </script>
 @endsection

@@ -17,8 +17,6 @@ class IssuingAuthority extends Model
     protected $fillable = [
         'name',
         'address',
-        'phone',
-        'email',
         'is_active'
     ];
 
