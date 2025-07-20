@@ -228,6 +228,18 @@
                         </a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link {{ request()->is('admin/logs*') ? 'active' : '' }}" aria-current="page"
+                            href="{{ route('admin.contract-templates.index') }}">
+                            <span class="item-name">Contract Templates</span>
+                        </a>
+                    </li>
+                     <li class="nav-item">
+                        <a class="nav-link {{ request()->is('admin/logs*') ? 'active' : '' }}" aria-current="page"
+                            href="{{ route('admin.contract-types.index') }}">
+                            <span class="item-name">Contract Types</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link" href="#"
                             onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                             <span class="item-name">Logout</span>

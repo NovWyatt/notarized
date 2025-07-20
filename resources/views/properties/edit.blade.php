@@ -1,7 +1,6 @@
 {{-- resources/views/properties/edit.blade.php --}}
 @extends('layouts.app2')
 
-@push('styles')
     <style>
         .spinner-border-sm {
             width: 1rem;
@@ -80,7 +79,6 @@
             border-bottom-right-radius: 0;
         }
     </style>
-@endpush
 
 @section('content')
     <div class="container-fluid p-3">
