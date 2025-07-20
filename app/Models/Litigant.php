@@ -80,4 +80,33 @@ class Litigant extends Model
     {
         return $this->hasOneThrough(Litigant::class, MarriageInformation::class, 'litigant_id', 'id', 'id', 'spouse_id');
     }
+
+    public function contractParties()
+    {
+        return $this->hasMany(ContractParty::class);
+    }
+
+    public function contracts()
+    {
+        return $this->hasManyThrough(Contract::class, ContractParty::class);
+    }
+
+    public function getDisplayNameAttribute(): string
+    {
+        return $this->full_name;
+    }
+
+    public function getPrimaryIdentityDocumentAttribute()
+    {
+        return $this->identityDocuments()->orderBy('created_at', 'desc')->first();
+    }
+
+    public function getIdentityInfoAttribute(): string
+    {
+        $identityDoc = $this->primary_identity_document;
+        if ($identityDoc) {
+            return strtoupper($identityDoc->document_type) . ': ' . $identityDoc->document_number;
+        }
+        return '';
+    }
 }

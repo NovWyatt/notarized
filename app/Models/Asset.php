@@ -5,9 +5,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Auth;
 
 class Asset extends Model
@@ -16,14 +16,15 @@ class Asset extends Model
 
     protected $fillable = [
         'asset_type',
+        'name',
         'notes',
         'created_by',
-        'updated_by'
+        'updated_by',
     ];
 
     protected $casts = [
         'created_at' => 'datetime',
-        'updated_at' => 'datetime'
+        'updated_at' => 'datetime',
     ];
 
     protected $hidden = [];
@@ -35,10 +36,10 @@ class Asset extends Model
 
         // Tự động gán created_by khi tạo mới
         static::creating(function ($model) {
-            if (Auth::check() && !$model->created_by) {
+            if (Auth::check() && ! $model->created_by) {
                 $model->created_by = Auth::id();
             }
-            if (Auth::check() && !$model->updated_by) {
+            if (Auth::check() && ! $model->updated_by) {
                 $model->updated_by = Auth::id();
             }
         });
@@ -89,10 +90,10 @@ class Asset extends Model
     }
 
     // Asset type constants
-    const TYPE_REAL_ESTATE_HOUSE = 'real_estate_house';
-    const TYPE_REAL_ESTATE_APARTMENT = 'real_estate_apartment';
-    const TYPE_REAL_ESTATE_LAND_ONLY = 'real_estate_land_only';
-    const TYPE_MOVABLE_PROPERTY_CAR = 'movable_property_car';
+    const TYPE_REAL_ESTATE_HOUSE           = 'real_estate_house';
+    const TYPE_REAL_ESTATE_APARTMENT       = 'real_estate_apartment';
+    const TYPE_REAL_ESTATE_LAND_ONLY       = 'real_estate_land_only';
+    const TYPE_MOVABLE_PROPERTY_CAR        = 'movable_property_car';
     const TYPE_MOVABLE_PROPERTY_MOTORCYCLE = 'movable_property_motorcycle';
 
     public static function getAssetTypes(): array
@@ -102,7 +103,7 @@ class Asset extends Model
             self::TYPE_REAL_ESTATE_APARTMENT,
             self::TYPE_REAL_ESTATE_LAND_ONLY,
             self::TYPE_MOVABLE_PROPERTY_CAR,
-            self::TYPE_MOVABLE_PROPERTY_MOTORCYCLE
+            self::TYPE_MOVABLE_PROPERTY_MOTORCYCLE,
         ];
     }
 
@@ -141,5 +142,22 @@ class Asset extends Model
     public function isUpdatedBy($userId): bool
     {
         return $this->updated_by == $userId;
+    }
+
+    public function contracts()
+    {
+        return $this->belongsToMany(Contract::class, 'contract_asset')
+            ->withPivot('notes')
+            ->withTimestamps();
+    }
+
+    public function getDisplayNameAttribute(): string
+    {
+        return $this->name;
+    }
+
+    public function isUsedInContracts(): bool
+    {
+        return $this->contracts()->exists();
     }
 }
