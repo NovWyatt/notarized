@@ -237,8 +237,8 @@
                                             <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
                                         <small class="form-text text-muted">
-                                            Sử dụng các biến như: {{ current_date }}, {{ contract_number }},
-                                            {{ transaction_value }}, etc.
+                                            Sử dụng các biến như: {{'{{current_date}}'}}, {{'{{contract_number}}'}},
+                                            {{'{{transaction_value}}'}}, etc.
                                         </small>
                                     </div>
                                 </div>
@@ -403,40 +403,40 @@
                                     <small class="text-muted">Nhấp để chèn vào nội dung:</small>
                                     <div class="mt-2">
                                         <span class="badge badge-secondary variable-item mb-1"
-                                            data-variable="{{ current_date }}">
-                                            {{ current_date }}
+                                            data-variable="{{'{{current_date}}'}}">
+                                            {{'{{current_date}}'}}
                                         </span>
                                         <span class="badge badge-secondary variable-item mb-1"
-                                            data-variable="{{ contract_number }}">
-                                            {{ contract_number }}
+                                            data-variable="{{'{{contract_number}}'}}">
+                                            {{'{{contract_number}}'}}
                                         </span>
                                         <span class="badge badge-secondary variable-item mb-1"
-                                            data-variable="{{ transaction_value }}">
-                                            {{ transaction_value }}
+                                            data-variable="{{'{{transaction_value}}'}}">
+                                            {{'{{transaction_value}}'}}
                                         </span>
                                         <span class="badge badge-secondary variable-item mb-1"
-                                            data-variable="{{ notary_fee }}">
-                                            {{ notary_fee }}
+                                            data-variable="{{'{{notary_fee}}'}}">
+                                            {{'{{notary_fee}}'}}
                                         </span>
                                         <span class="badge badge-secondary variable-item mb-1"
-                                            data-variable="{{ notary_number }}">
-                                            {{ notary_number }}
+                                            data-variable="{{'{{notary_number}}'}}">
+                                            {{'{{notary_number}}'}}
                                         </span>
                                         <span class="badge badge-secondary variable-item mb-1"
-                                            data-variable="{{ book_number }}">
-                                            {{ book_number }}
+                                            data-variable="{{'{{book_number}}'}}">
+                                            {{'{{book_number}}'}}
                                         </span>
                                         <span class="badge badge-secondary variable-item mb-1"
-                                            data-variable="{{ office_name }}">
-                                            {{ office_name }}
+                                            data-variable="{{'{{office_name}}'}}">
+                                            {{'{{office_name}}'}}
                                         </span>
                                         <span class="badge badge-secondary variable-item mb-1"
-                                            data-variable="{{ office_address }}">
-                                            {{ office_address }}
+                                            data-variable="{{'{{office_address}}'}}">
+                                            {{'{{office_address}}'}}
                                         </span>
                                         <span class="badge badge-secondary variable-item mb-1"
-                                            data-variable="{{ province }}">
-                                            {{ province }}
+                                            data-variable="{{'{{province}}'}}">
+                                            {{'{{province}}'}}
                                         </span>
                                     </div>
                                 </div>
@@ -481,15 +481,15 @@
                     <div class="form-group">
                         <label>Chọn biến để chèn:</label>
                         <select class="form-control" id="variableSelect">
-                            <option value="{{ current_date }}">Ngày hiện tại</option>
-                            <option value="{{ contract_number }}">Số hợp đồng</option>
-                            <option value="{{ transaction_value }}">Giá trị giao dịch</option>
-                            <option value="{{ notary_fee }}">Phí công chứng</option>
-                            <option value="{{ notary_number }}">Số công chứng</option>
-                            <option value="{{ book_number }}">Số sổ</option>
-                            <option value="{{ office_name }}">Tên văn phòng</option>
-                            <option value="{{ office_address }}">Địa chỉ văn phòng</option>
-                            <option value="{{ province }}">Tỉnh/Thành phố</option>
+                            <option value="{{'{{current_date}}'}}">Ngày hiện tại</option>
+                            <option value="{{'{{contract_number}}'}}">Số hợp đồng</option>
+                            <option value="{{'{{transaction_value}}'}}">Giá trị giao dịch</option>
+                            <option value="{{'{{notary_fee}}'}}">Phí công chứng</option>
+                            <option value="{{'{{notary_number}}'}}">Số công chứng</option>
+                            <option value="{{'{{book_number}}'}}">Số sổ</option>
+                            <option value="{{'{{office_name}}'}}">Tên văn phòng</option>
+                            <option value="{{'{{office_address}}'}}">Địa chỉ văn phòng</option>
+                            <option value="{{'{{province}}'}}">Tỉnh/Thành phố</option>
                         </select>
                     </div>
                 </div>
@@ -708,15 +708,15 @@
                 // Replace variables with sample data for preview
                 let previewContent = content;
                 const sampleData = {
-                    '{{ current_date }}': new Date().toLocaleDateString('vi-VN'),
-                    '{{ contract_number }}': 'HĐ001/2025',
-                    '{{ transaction_value }}': '1,000,000,000 VNĐ',
-                    '{{ notary_fee }}': '500,000 VNĐ',
-                    '{{ notary_number }}': 'CC001/2025',
-                    '{{ book_number }}': 'Sổ 01',
-                    '{{ office_name }}': $('#office_name').val() || 'Văn phòng công chứng',
-                    '{{ office_address }}': $('#office_address').val() || 'Địa chỉ văn phòng',
-                    '{{ province }}': $('#province').val() || 'Tỉnh/Thành phố'
+                    '{{'{{current_date}}'}}': new Date().toLocaleDateString('vi-VN'),
+                    '{{'{{contract_number}}'}}': 'HĐ001/2025',
+                    '{{'{{transaction_value}}'}}': '1,000,000,000 VNĐ',
+                    '{{'{{notary_fee}}'}}': '500,000 VNĐ',
+                    '{{'{{notary_number}}'}}': 'CC001/2025',
+                    '{{'{{book_number}}'}}': 'Sổ 01',
+                    '{{'{{office_name}}'}}': $('#office_name').val() || 'Văn phòng công chứng',
+                    '{{'{{office_address}}'}}': $('#office_address').val() || 'Địa chỉ văn phòng',
+                    '{{'{{province}}'}}': $('#province').val() || 'Tỉnh/Thành phố'
                 };
 
                 Object.entries(sampleData).forEach(([variable, value]) => {

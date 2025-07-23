@@ -178,27 +178,27 @@
                                 <small class="text-muted">Các biến được thay thế:</small>
                                 <div class="mt-2">
                                     <div class="d-flex justify-content-between py-1">
-                                        <small class="text-muted">{{ current_date }}</small>
+                                        <small class="text-muted">{{'{{current_date}}'}}</small>
                                         <small class="font-weight-bold">{{ now()->format('d/m/Y') }}</small>
                                     </div>
                                     <div class="d-flex justify-content-between py-1">
-                                        <small class="text-muted">{{ contract_number }}</small>
+                                        <small class="text-muted">{{'{{contract_number}}'}}</small>
                                         <small class="font-weight-bold">HĐ001/2025</small>
                                     </div>
                                     <div class="d-flex justify-content-between py-1">
-                                        <small class="text-muted">{{ transaction_value }}</small>
+                                        <small class="text-muted">{{'{{transaction_value}}'}}</small>
                                         <small class="font-weight-bold">1,000,000,000 VNĐ</small>
                                     </div>
                                     <div class="d-flex justify-content-between py-1">
-                                        <small class="text-muted">{{ notary_fee }}</small>
+                                        <small class="text-muted">{{'{{notary_fee}}'}}</small>
                                         <small class="font-weight-bold">500,000 VNĐ</small>
                                     </div>
                                     <div class="d-flex justify-content-between py-1">
-                                        <small class="text-muted">{{ notary_number }}</small>
+                                        <small class="text-muted">{{'{{notary_number}}'}}</small>
                                         <small class="font-weight-bold">CC001/2025</small>
                                     </div>
                                     <div class="d-flex justify-content-between py-1">
-                                        <small class="text-muted">{{ book_number }}</small>
+                                        <small class="text-muted">{{'{{book_number}}'}}</small>
                                         <small class="font-weight-bold">Sổ 01</small>
                                     </div>
                                 </div>

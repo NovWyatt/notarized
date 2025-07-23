@@ -258,39 +258,39 @@
                                     <small class="text-muted">Nhấp để chèn vào nội dung:</small>
                                     <div class="mt-2">
                                         <span class="badge badge-secondary variable-item mb-1"
-                                            data-variable="{{ current_date }}">
-                                            &#123;&#123;current_date&#125;&#125;
+                                            data-variable="@{{current_date}}">
+                                           @{{current_date}}
                                         </span>
                                         <span class="badge badge-secondary variable-item mb-1"
-                                            data-variable="{{ contract_number }}">
+                                            data-variable="{{'{{contract_number}}'}}">
                                             &#123;&#123;contract_number&#125;&#125;
                                         </span>
                                         <span class="badge badge-secondary variable-item mb-1"
-                                            data-variable="{{ transaction_value }}">
+                                            data-variable="{{'{{transaction_value}}'}}">
                                             &#123;&#123;transaction_value&#125;&#125;
                                         </span>
                                         <span class="badge badge-secondary variable-item mb-1"
-                                            data-variable="{{ notary_fee }}">
+                                            data-variable="{{'{{notary_fee}}'}}">
                                             &#123;&#123;notary_fee&#125;&#125;
                                         </span>
                                         <span class="badge badge-secondary variable-item mb-1"
-                                            data-variable="{{ notary_number }}">
+                                            data-variable="{{'{{notary_number}}'}}">
                                             &#123;&#123;notary_number&#125;&#125;
                                         </span>
                                         <span class="badge badge-secondary variable-item mb-1"
-                                            data-variable="{{ book_number }}">
+                                            data-variable="{{'{{book_number}}'}}">
                                             &#123;&#123;book_number&#125;&#125;
                                         </span>
                                         <span class="badge badge-secondary variable-item mb-1"
-                                            data-variable="{{ office_name }}">
+                                            data-variable="{{'{{office_name}}'}}">
                                             &#123;&#123;office_name&#125;&#125;
                                         </span>
                                         <span class="badge badge-secondary variable-item mb-1"
-                                            data-variable="{{ office_address }}">
+                                            data-variable="{{'{{office_address}}'}}">
                                             &#123;&#123;office_address&#125;&#125;
                                         </span>
                                         <span class="badge badge-secondary variable-item mb-1"
-                                            data-variable="{{ province }}">
+                                            data-variable="{{'{{province}}'}}">
                                             &#123;&#123;province&#125;&#125;
                                         </span>
                                     </div>
@@ -332,15 +332,15 @@
                     <div class="form-group">
                         <label>Chọn biến để chèn:</label>
                         <select class="form-control" id="variableSelect">
-                            <option value="{{ current_date }}">Ngày hiện tại</option>
-                            <option value="{{ contract_number }}">Số hợp đồng</option>
-                            <option value="{{ transaction_value }}">Giá trị giao dịch</option>
-                            <option value="{{ notary_fee }}">Phí công chứng</option>
-                            <option value="{{ notary_number }}">Số công chứng</option>
-                            <option value="{{ book_number }}">Số sổ</option>
-                            <option value="{{ office_name }}">Tên văn phòng</option>
-                            <option value="{{ office_address }}">Địa chỉ văn phòng</option>
-                            <option value="{{ province }}">Tỉnh/Thành phố</option>
+                            <option value="{{'{{current_date}}'}}">Ngày hiện tại</option>
+                            <option value="{{'{{contract_number}}'}}">Số hợp đồng</option>
+                            <option value="{{'{{transaction_value}}'}}">Giá trị giao dịch</option>
+                            <option value="{{'{{notary_fee}}'}}">Phí công chứng</option>
+                            <option value="{{'{{notary_number}}'}}">Số công chứng</option>
+                            <option value="{{'{{book_number}}'}}">Số sổ</option>
+                            <option value="{{'{{office_name}}'}}">Tên văn phòng</option>
+                            <option value="{{'{{office_address}}'}}">Địa chỉ văn phòng</option>
+                            <option value="{{'{{province}}'}}">Tỉnh/Thành phố</option>
                         </select>
                     </div>
                 </div>
@@ -552,15 +552,15 @@
                 // Replace variables with sample data for preview
                 let previewContent = content;
                 const sampleData = {
-                    '{{ current_date }}': new Date().toLocaleDateString('vi-VN'),
-                    '{{ contract_number }}': 'HĐ001/2025',
-                    '{{ transaction_value }}': '1,000,000,000 VNĐ',
-                    '{{ notary_fee }}': '500,000 VNĐ',
-                    '{{ notary_number }}': 'CC001/2025',
-                    '{{ book_number }}': 'Sổ 01',
-                    '{{ office_name }}': $('#office_name').val() || 'Văn phòng công chứng',
-                    '{{ office_address }}': $('#office_address').val() || 'Địa chỉ văn phòng',
-                    '{{ province }}': $('#province').val() || 'Tỉnh/Thành phố'
+                    '{{'{{current_date}}'}}': new Date().toLocaleDateString('vi-VN'),
+                    '{{'{{contract_number}}'}}': 'HĐ001/2025',
+                    '{{'{{transaction_value}}'}}': '1,000,000,000 VNĐ',
+                    '{{'{{notary_fee}}'}}': '500,000 VNĐ',
+                    '{{'{{notary_number}}'}}': 'CC001/2025',
+                    '{{'{{book_number}}'}}': 'Sổ 01',
+                    '{{'{{office_name}}'}}': $('#office_name').val() || 'Văn phòng công chứng',
+                    '{{'{{office_address}}'}}': $('#office_address').val() || 'Địa chỉ văn phòng',
+                    '{{'{{province}}'}}': $('#province').val() || 'Tỉnh/Thành phố'
                 };
 
                 Object.entries(sampleData).forEach(([variable, value]) => {

@@ -13,6 +13,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('asset_id')->constrained()->onDelete('cascade');
             $table->foreignId('certificate_type_id')->constrained()->onDelete('restrict');
+            $table->foreignId('issuing_authority_id')->nullable()->constrained('issuing_authorities')->nullOnDelete();
             $table->string('issue_number', 50)->nullable();
             $table->string('book_number', 50)->nullable();
             $table->date('issue_date')->nullable();
@@ -21,6 +22,7 @@ return new class extends Migration
             $table->index('asset_id');
             $table->index('certificate_type_id');
         });
+
     }
 
     public function down()

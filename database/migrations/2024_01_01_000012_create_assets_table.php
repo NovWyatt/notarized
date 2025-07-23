@@ -16,12 +16,18 @@ return new class extends Migration
                 'real_estate_apartment',
                 'real_estate_land_only',
                 'movable_property_car',
-                'movable_property_motorcycle'
+                'movable_property_motorcycle',
             ]);
             $table->text('notes')->nullable();
             $table->timestamps();
 
             $table->index('asset_type');
+            $table->foreignId('created_by')->nullable()->constrained('users')->onDelete('set null');
+            $table->foreignId('updated_by')->nullable()->constrained('users')->onDelete('set null');
+
+            // Add indexes for performance
+            $table->index('created_by');
+            $table->index('updated_by');
         });
     }
 
