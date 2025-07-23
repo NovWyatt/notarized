@@ -1,5 +1,5 @@
 {{-- resources/views/properties/index.blade.php --}}
-@extends('layouts.app2')
+@extends('layouts.app')
 
 <style>
     .asset-checkbox {

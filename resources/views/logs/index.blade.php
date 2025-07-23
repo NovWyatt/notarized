@@ -1,5 +1,5 @@
 <!-- resources/views/admin/logs/index.blade.php -->
-@extends('layouts.app2')
+@extends('layouts.app')
 
 @section('content')
     <div class="container-fluid p-3">

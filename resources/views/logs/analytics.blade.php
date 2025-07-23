@@ -1,5 +1,5 @@
 <!-- resources/views/admin/logs/analytics.blade.php -->
-@extends('layouts.app2')
+@extends('layouts.app')
 <style>
     p {
         color: #2b2626;

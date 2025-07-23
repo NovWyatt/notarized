@@ -1,5 +1,5 @@
 {{-- resources/views/properties/create.blade.php --}}
-@extends('layouts.app2')
+@extends('layouts.app')
     <style>
         .spinner-border-sm {
             width: 1rem;
