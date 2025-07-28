@@ -167,19 +167,14 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link {{ request()->is('admin/dossiers*') ? 'active' : '' }}" aria-current="page" href="{{ route('admin.dossiers.index') }}">
-                            <span class="item-name">Tạo Hồ Sơ</span>
+                            <span class="item-name">Hồ Sơ</span>
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" aria-current="page" href="#">
-                            <span class="item-name">Danh Sách Hồ Sơ</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
+                    {{-- <li class="nav-item">
                         <a class="nav-link" aria-current="page" href="#">
                             <span class="item-name">Tra Cứu</span>
                         </a>
-                    </li>
+                    </li> --}}
                     <li class="nav-item">
                         <a class="nav-link {{ request()->is('litigants*') ? 'active' : '' }}" aria-current="page" href="{{ route('litigants.index') }}">
                             <span class="item-name">Đương Sự</span>
@@ -199,11 +194,11 @@
                             <span class="mini-icon">-</span>
                         </a>
                     </li>
-                    <li class="nav-item">
+                    {{-- <li class="nav-item">
                         <a class="nav-link" aria-current="page" href="#">
                             <span class="item-name">Ngăn Chặn</span>
                         </a>
-                    </li>
+                    </li> --}}
                     <li>
                         <hr class="hr-horizontal">
                     </li>
@@ -213,11 +208,11 @@
                             <span class="mini-icon">-</span>
                         </a>
                     </li>
-                    <li class="nav-item">
+                    {{-- <li class="nav-item">
                         <a class="nav-link" aria-current="page" href="#">
                             <span class="item-name">Báo Cáo Hồ Sơ</span>
                         </a>
-                    </li>
+                    </li> --}}
                     <li>
                         <hr class="hr-horizontal">
                     </li>
