@@ -103,6 +103,7 @@ Route::get('/issuing-authorities/search', [IssuingAuthorityController::class, 's
 Route::post('/issuing-authorities', [IssuingAuthorityController::class, 'store'])->name('issuing-authorities.store');
 
 Route::get('/api/search-litigants', [LitigantController::class, 'searchLitigants'])->name('search.litigants');
+Route::get('/api/search-assets', [AssetController::class, 'apiSearch'])->name('api.search-assets');
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 

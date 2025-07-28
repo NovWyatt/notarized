@@ -139,20 +139,38 @@ class DossierController extends Controller
                 Log::warning('Error loading creator: ' . $e->getMessage());
             }
 
-            // Set default values cho các biến
-            $contractTypes = collect([]);
-            $litigants     = collect([]);
-            $assets        = collect([]);
+            // Load contract types với active templates
+            $contractTypes = ContractType::active()
+                ->with(['activeTemplates' => function ($query) {
+                    $query->ordered();
+                }])
+                ->ordered()
+                ->get();
+
+            Log::info('Contract types loaded', [
+                'count' => $contractTypes->count(),
+                'types' => $contractTypes->pluck('name', 'id')->toArray(),
+            ]);
+
+                                      // Load all litigants và assets cho user hiện tại (để backwards compatibility)
+                                      // Nhưng thực tế sẽ dùng API search
+            $litigants = collect([]); // Để trống vì sẽ dùng API search
+            $assets    = collect([]); // Để trống vì sẽ dùng API search
+
+            // Load contracts của dossier để tính stats
+            $contracts     = $dossier->contracts()->with(['template', 'parties.litigant'])->get();
             $contractStats = [
-                'total'       => 0,
-                'draft'       => 0,
-                'completed'   => 0,
-                'total_value' => 0,
+                'total'       => $contracts->count(),
+                'draft'       => $contracts->where('status', 'draft')->count(),
+                'completed'   => $contracts->where('status', 'completed')->count(),
+                'total_value' => $contracts->sum('transaction_value'),
             ];
 
             Log::info('Before rendering view', [
-                'dossier_id'   => $dossier->id,
-                'dossier_name' => $dossier->name,
+                'dossier_id'     => $dossier->id,
+                'dossier_name'   => $dossier->name,
+                'contract_types' => $contractTypes->count(),
+                'contract_stats' => $contractStats,
             ]);
 
             // Render view

@@ -315,25 +315,6 @@
                                                         <i class="fas fa-trash"></i>
                                                     </button>
                                                 @endif
-                                                <div class="btn-group" role="group">
-                                                    <button type="button"
-                                                        class="btn btn-outline-secondary dropdown-toggle"
-                                                        data-bs-toggle="dropdown" aria-expanded="false" title="Thêm">
-                                                        <i class="fas fa-ellipsis-v"></i>
-                                                    </button>
-                                                    <ul class="dropdown-menu">
-                                                        <li><a class="dropdown-item"
-                                                                href="{{ route('properties.clone', $asset) }}">
-                                                                <i class="fas fa-copy me-2"></i>Sao chép
-                                                            </a></li>
-                                                        <li>
-                                                            <hr class="dropdown-divider">
-                                                        </li>
-                                                        <li><a class="dropdown-item" href="#">
-                                                                <i class="fas fa-download me-2"></i>Xuất PDF
-                                                            </a></li>
-                                                    </ul>
-                                                </div>
                                             </div>
                                         </td>
                                     </tr>

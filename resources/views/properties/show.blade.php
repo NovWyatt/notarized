@@ -27,9 +27,6 @@
                             <i class="bi bi-pencil me-2"></i>Chỉnh sửa
                         </a>
                     @endif
-                    <a href="{{ route('properties.clone', $asset) }}" class="btn btn-info">
-                        <i class="bi bi-files me-2"></i>Sao chép
-                    </a>
                     @if($canDelete)
                         <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
                             <i class="bi bi-trash me-2"></i>Xóa
@@ -58,7 +55,7 @@
                         <table class="table table-borderless">
                             <tr>
                                 <td class="text-muted">Tên tài sản:</td>
-                                <td class="fw-bold">{{ $displayName }}</td>
+                                <td class="fw-bold">{{ $asset->name }}</td>
                             </tr>
                             <tr>
                                 <td class="text-muted">Loại tài sản:</td>
@@ -259,7 +256,7 @@
                     <div class="card-body">
                         <div class="row">
                             @if($canEdit)
-                                <div class="col-md-3">
+                                <div class="col-md-12">
                                     <a href="{{ route('properties.edit', $asset) }}" class="btn btn-outline-warning w-100 mb-2">
                                         <i class="fas fa-edit me-2"></i>
                                         <div>
@@ -269,36 +266,6 @@
                                     </a>
                                 </div>
                             @endif
-
-                            <div class="col-md-3">
-                                <a href="{{ route('properties.clone', $asset) }}" class="btn btn-outline-info w-100 mb-2">
-                                    <i class="fas fa-copy me-2"></i>
-                                    <div>
-                                        <div class="fw-bold">Sao chép</div>
-                                        <small>Tạo bản sao</small>
-                                    </div>
-                                </a>
-                            </div>
-
-                            <div class="col-md-3">
-                                <button class="btn btn-outline-success w-100 mb-2" onclick="exportPDF()">
-                                    <i class="fas fa-file-pdf me-2"></i>
-                                    <div>
-                                        <div class="fw-bold">Xuất PDF</div>
-                                        <small>Tải về file PDF</small>
-                                    </div>
-                                </button>
-                            </div>
-
-                            <div class="col-md-3">
-                                <button class="btn btn-outline-secondary w-100 mb-2" onclick="shareAsset()">
-                                    <i class="fas fa-share-alt me-2"></i>
-                                    <div>
-                                        <div class="fw-bold">Chia sẻ</div>
-                                        <small>Chia sẻ liên kết</small>
-                                    </div>
-                                </button>
-                            </div>
                         </div>
                     </div>
                 </div>
