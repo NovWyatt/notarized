@@ -200,3 +200,5 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         });
     });
 });
+
+Route::get('/admin/assets/generate-names', [AssetController::class, 'generateMissingAssetNames']);
