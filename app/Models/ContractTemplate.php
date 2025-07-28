@@ -1,11 +1,11 @@
 <?php
-
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Log;
 
 class ContractTemplate extends Model
 {
@@ -19,28 +19,28 @@ class ContractTemplate extends Model
         'template_info',
         'default_clauses',
         'is_active',
-        'sort_order'
+        'sort_order',
     ];
 
     protected $casts = [
         'template_settings' => 'array',
-        'template_info' => 'array',
-        'default_clauses' => 'array',
-        'is_active' => 'boolean',
-        'sort_order' => 'integer',
+        'template_info'     => 'array',
+        // 'default_clauses'   => 'array',
+        'is_active'         => 'boolean',
+        'sort_order'        => 'integer',
     ];
 
     // Default template settings
     const DEFAULT_SETTINGS = [
-        'show_parties' => true,
-        'show_assets' => true,
-        'show_clauses' => true,
-        'show_testimonial' => true,
+        'show_parties'           => true,
+        'show_assets'            => true,
+        'show_clauses'           => true,
+        'show_testimonial'       => true,
         'show_transaction_value' => true,
-        'show_signatures' => true,
-        'show_notary_info' => true,
-        'required_parties_min' => 2,
-        'required_assets_min' => 1,
+        'show_signatures'        => true,
+        'show_notary_info'       => true,
+        'required_parties_min'   => 2,
+        'required_assets_min'    => 1,
     ];
 
     // Relationships
@@ -57,27 +57,105 @@ class ContractTemplate extends Model
     // Accessors
     public function getTemplateSettingsAttribute($value): array
     {
-        $settings = json_decode($value, true) ?: [];
-        return array_merge(self::DEFAULT_SETTINGS, $settings);
+        if (empty($value) || $value === '[]' || $value === 'null') {
+            $settings = [];
+        } else {
+            $settings = json_decode($value, true);
+            if (! is_array($settings)) {
+                $settings = [];
+            }
+        }
+
+        $defaults = [
+            'show_parties'           => true,
+            'show_assets'            => true,
+            'show_clauses'           => true,
+            'show_testimonial'       => true,
+            'show_transaction_value' => true,
+            'show_signatures'        => true,
+            'show_notary_info'       => true,
+            'required_parties_min'   => 2,
+            'required_assets_min'    => 1,
+        ];
+
+        return array_merge($defaults, $settings);
     }
 
     public function getTemplateInfoAttribute($value): array
     {
-        $info = json_decode($value, true) ?: [];
+        if (empty($value) || $value === 'null') {
+            $info = [];
+        } else {
+            $info = json_decode($value, true);
+            if (! is_array($info)) {
+                $info = [];
+            }
+        }
 
-        // Trả về template info với giá trị mặc định
+        // CHỈ trả về dữ liệu từ database, KHÔNG merge với giá trị mặc định
+        // Vì accessor này được gọi khi hiển thị template, không phải khi tạo hợp đồng
+        return $info;
+    }
+
+    public function getTemplateInfoWithDefaults(): array
+    {
+        $info = $this->template_info; // Gọi accessor trên
+
+        // Merge với default values chỉ khi cần thiết (ví dụ: khi tạo hợp đồng)
         return array_merge([
-            'current_user' => auth()->user()->name ?? 'Công chứng viên',
-            'current_date' => now()->format('d/m/Y'),
-            'office_name' => 'Văn phòng công chứng Nguyễn Thị Như Trang',
+            'current_user'   => auth()->user()->name ?? 'Công chứng viên',
+            'office_name'    => 'Văn phòng công chứng Nguyễn Thị Như Trang',
             'office_address' => '320, đường ĐT743A, khu phố Trung Thắng, phường Bình Thắng, thành phố Dĩ An, tỉnh Bình Dương',
-            'province' => 'tỉnh Bình Dương',
+            'province'       => 'tỉnh Bình Dương',
         ], $info);
     }
 
     public function getDefaultClausesAttribute($value): array
     {
-        return json_decode($value, true) ?: [];
+        if (empty($value) || $value === 'null') {
+            return [];
+        }
+
+        // BƯỚC 1: Decode lần đầu (vì bị double-encoded)
+        $firstDecode = json_decode($value, true);
+
+        // if (json_last_error() !== JSON_ERROR_NONE) {
+        //     Log::warning('First JSON decode failed:', ['error' => json_last_error_msg()]);
+        //     return [];
+        // }
+
+        // BƯỚC 2: Nếu kết quả là string, decode lần nữa
+        if (is_string($firstDecode)) {
+            $secondDecode = json_decode($firstDecode, true);
+
+            // if (json_last_error() !== JSON_ERROR_NONE) {
+            //     Log::warning('Second JSON decode failed:', ['error' => json_last_error_msg()]);
+            //     return [];
+            // }
+
+            $decoded = $secondDecode;
+        } else {
+            $decoded = $firstDecode;
+        }
+
+        if (! is_array($decoded)) {
+            return [];
+        }
+
+        // BƯỚC 3: Chuyển object với key string thành indexed array
+        $result = [];
+        foreach ($decoded as $key => $clause) {
+            if (is_array($clause)) {
+                // Đảm bảo is_required là boolean
+                if (isset($clause['is_required'])) {
+                    $clause['is_required'] = (bool) $clause['is_required'];
+                }
+                $result[] = $clause;
+            }
+        }
+
+        // Log::info('Successfully decoded clauses:', ['count' => count($result)]);
+        return $result;
     }
 
     public function getContractsCountAttribute(): int
@@ -126,15 +204,17 @@ class ContractTemplate extends Model
     public function generateContent(array $variables = []): string
     {
         $content = $this->content;
-        $templateInfo = $this->template_info;
 
-        // Merge template info with custom variables
+        // Sử dụng method mới để lấy template info với defaults
+        $templateInfo = $this->getTemplateInfoWithDefaults();
+
+        // Merge template info với custom variables
         $allVariables = array_merge($templateInfo, $variables);
 
         // Replace template variables
         foreach ($allVariables as $key => $value) {
             $placeholder = "{{" . $key . "}}";
-            $content = str_replace($placeholder, $value, $content);
+            $content     = str_replace($placeholder, $value, $content);
         }
 
         return $content;

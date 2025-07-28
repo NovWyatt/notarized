@@ -16,30 +16,36 @@ class ContractParty extends Model
         'party_type',
         'group_name',
         'order_in_group',
-        'notes'
-    ];
-
-    protected $casts = [
-        'order_in_group' => 'integer',
+        'notes',
     ];
 
     // Party type constants
-    const TYPE_TRANSFEROR = 'transferor';
-    const TYPE_TRANSFEREE = 'transferee';
-    const TYPE_BUYER = 'buyer';
-    const TYPE_SELLER = 'seller';
-    const TYPE_LESSOR = 'lessor';
-    const TYPE_LESSEE = 'lessee';
-    const TYPE_OTHER = 'other';
-
     const PARTY_TYPES = [
-        self::TYPE_TRANSFEROR => 'Bên chuyển nhượng',
-        self::TYPE_TRANSFEREE => 'Bên nhận chuyển nhượng',
-        self::TYPE_BUYER => 'Bên mua',
-        self::TYPE_SELLER => 'Bên bán',
-        self::TYPE_LESSOR => 'Bên cho thuê',
-        self::TYPE_LESSEE => 'Bên thuê',
-        self::TYPE_OTHER => 'Khác',
+        'transferor' => 'Bên chuyển giao',
+        'transferee' => 'Bên nhận chuyển giao',
+        'buyer' => 'Bên mua',
+        'seller' => 'Bên bán',
+        'lender' => 'Bên cho vay',
+        'borrower' => 'Bên đi vay',
+        'lessor' => 'Bên cho thuê',
+        'lessee' => 'Bên thuê',
+        'guarantor' => 'Bên bảo lãnh',
+        'witness' => 'Người chứng kiến',
+        'other' => 'Khác',
+    ];
+
+    // Group name constants
+    const GROUP_NAMES = [
+        'Bên A',
+        'Bên B',
+        'Bên C',
+        'Bên thứ nhất',
+        'Bên thứ hai',
+        'Bên thứ ba',
+        'Bên chuyển giao',
+        'Bên nhận chuyển giao',
+        'Bên mua',
+        'Bên bán',
     ];
 
     // Relationships
@@ -59,13 +65,23 @@ class ContractParty extends Model
         return self::PARTY_TYPES[$this->party_type] ?? $this->party_type;
     }
 
+    public function getFullInfoAttribute(): string
+    {
+        return "{$this->group_name} - {$this->litigant->full_name} ({$this->party_type_label})";
+    }
+
     // Scopes
+    public function scopeByContract($query, int $contractId)
+    {
+        return $query->where('contract_id', $contractId);
+    }
+
     public function scopeByGroup($query, string $groupName)
     {
         return $query->where('group_name', $groupName);
     }
 
-    public function scopeByType($query, string $partyType)
+    public function scopeByPartyType($query, string $partyType)
     {
         return $query->where('party_type', $partyType);
     }
@@ -76,28 +92,43 @@ class ContractParty extends Model
     }
 
     // Helper methods
-    public function getDisplayName(): string
+    public function moveToGroup(string $newGroupName, int $newOrder = 1): bool
     {
-        return $this->litigant->full_name;
+        return $this->update([
+            'group_name' => $newGroupName,
+            'order_in_group' => $newOrder,
+        ]);
     }
 
-    public function getIdentityInfo(): string
+    public function changePartyType(string $newPartyType): bool
     {
-        $identityDoc = $this->litigant->identityDocuments->first();
-        if ($identityDoc) {
-            return strtoupper($identityDoc->document_type) . ': ' . $identityDoc->document_number;
+        if (array_key_exists($newPartyType, self::PARTY_TYPES)) {
+            return $this->update(['party_type' => $newPartyType]);
         }
-        return '';
+        return false;
     }
 
-    public function getFullInfo(): array
+    public function getDisplayOrder(): string
     {
-        return [
-            'name' => $this->litigant->full_name,
-            'party_type' => $this->party_type_label,
-            'group_name' => $this->group_name,
-            'identity' => $this->getIdentityInfo(),
-            'notes' => $this->notes,
-        ];
+        $groupParties = static::byContract($this->contract_id)
+            ->byGroup($this->group_name)
+            ->ordered()
+            ->get();
+
+        $position = $groupParties->search(fn($party) => $party->id === $this->id) + 1;
+
+        return $position > 1 ? " (người thứ {$position})" : '';
+    }
+
+    public function isFirstInGroup(): bool
+    {
+        return $this->order_in_group === 1;
+    }
+
+    public function canBeReordered(): bool
+    {
+        return static::byContract($this->contract_id)
+            ->byGroup($this->group_name)
+            ->count() > 1;
     }
 }

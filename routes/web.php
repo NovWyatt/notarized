@@ -1,8 +1,9 @@
 <?php
 
+use App\Http\Controllers\AdminLogController;
 use App\Http\Controllers\Admin\ContractTemplateController;
 use App\Http\Controllers\Admin\ContractTypeController;
-use App\Http\Controllers\AdminLogController;
+use App\Http\Controllers\Admin\DossierController;
 use App\Http\Controllers\AssetController;
 use App\Http\Controllers\CertificateTypeController;
 use App\Http\Controllers\CustomAuthController;
@@ -159,5 +160,42 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
         Route::post('/ajax/generate-settings', [ContractTemplateController::class, 'generateSettings'])->name('ajax.generate-settings');
         Route::post('/ajax/validate-name', [ContractTemplateController::class, 'validateName'])->name('ajax.validate-name');
         Route::get('/ajax/statistics', [ContractTemplateController::class, 'statistics'])->name('ajax.statistics');
+    });
+});
+
+Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
+
+    // Basic CRUD cho Dossier - sử dụng parameter name khác để tránh model binding
+    Route::get('dossiers', [DossierController::class, 'index'])->name('dossiers.index');
+    Route::get('dossiers/create', [DossierController::class, 'create'])->name('dossiers.create');
+    Route::post('dossiers', [DossierController::class, 'store'])->name('dossiers.store');
+    Route::get('dossiers/{dossier_id}', [DossierController::class, 'show'])->name('dossiers.show');
+    Route::get('dossiers/{dossier_id}/edit', [DossierController::class, 'edit'])->name('dossiers.edit');
+    Route::put('dossiers/{dossier_id}', [DossierController::class, 'update'])->name('dossiers.update');
+    Route::delete('dossiers/{dossier_id}', [DossierController::class, 'destroy'])->name('dossiers.destroy');
+
+    // Dossier specific routes
+    Route::prefix('dossiers')->name('dossiers.')->group(function () {
+
+        // Cập nhật trạng thái
+        Route::patch('{dossier_id}/status', [DossierController::class, 'updateStatus'])->name('update-status');
+
+        // Contract routes trong dossier
+        Route::prefix('{dossier_id}/contracts')->name('contracts.')->group(function () {
+
+            // Tạo contract từ template (POST từ modal)
+            Route::post('create', [DossierController::class, 'createContractFromTemplate'])->name('create');
+
+            // Hiển thị và export contract
+            Route::get('{contract_id}', [DossierController::class, 'showContract'])->name('show');
+            Route::get('{contract_id}/export/pdf', [DossierController::class, 'exportContractPdf'])->name('export.pdf');
+            Route::get('{contract_id}/export/word', [DossierController::class, 'exportContractWord'])->name('export.word');
+        });
+
+        // AJAX endpoints
+        Route::prefix('{dossier_id}/ajax')->name('ajax.')->group(function () {
+            Route::get('template-info', [DossierController::class, 'getTemplateInfo'])->name('template-info');
+            Route::get('template-preview', [DossierController::class, 'previewTemplate'])->name('template-preview');
+        });
     });
 });

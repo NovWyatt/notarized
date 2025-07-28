@@ -44,6 +44,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         /* Thêm vào file CSS */
         .search-container {
@@ -164,7 +166,7 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" aria-current="page" href="#">
+                        <a class="nav-link {{ request()->is('admin/dossiers*') ? 'active' : '' }}" aria-current="page" href="{{ route('admin.dossiers.index') }}">
                             <span class="item-name">Tạo Hồ Sơ</span>
                         </a>
                     </li>
@@ -231,13 +233,13 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {{ request()->is('admin/logs*') ? 'active' : '' }}" aria-current="page" href="{{ route('admin.contract-templates.index') }}">
-                            <span class="item-name">Contract Templates</span>
+                        <a class="nav-link {{ request()->is('admin/contract-templates*') ? 'active' : '' }}" aria-current="page" href="{{ route('admin.contract-templates.index') }}">
+                            <span class="item-name">Biểu Mẫu Hợp Đồng</span>
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {{ request()->is('admin/logs*') ? 'active' : '' }}" aria-current="page" href="{{ route('admin.contract-types.index') }}">
-                            <span class="item-name">Contract Types</span>
+                        <a class="nav-link {{ request()->is('admin/contract-types*') ? 'active' : '' }}" aria-current="page" href="{{ route('admin.contract-types.index') }}">
+                            <span class="item-name">Hợp Đồng</span>
                         </a>
                     </li>
                     <li class="nav-item">

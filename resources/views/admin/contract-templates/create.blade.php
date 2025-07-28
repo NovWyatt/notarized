@@ -26,8 +26,40 @@
                             <div class="card-header py-3">
                                 <h6 class="m-0 font-weight-bold text-primary">Thông tin cơ bản</h6>
                             </div>
+                            <!-- Thêm VÀO ĐẦU phần "Thông tin cơ bản" trong create.blade.php -->
                             <div class="card-body">
                                 <div class="row">
+                                    <!-- TÊN TEMPLATE - THIẾU HOÀN TOÀN -->
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                            <label for="name" class="form-label required">Tên template</label>
+                                            <input type="text" class="form-control @error('name') is-invalid @enderror" id="name" name="name" value="{{ old('name') }}" placeholder="Ví dụ: Template hợp đồng mua bán nhà đất chuẩn" required>
+                                            @error('name')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                            <div class="name-validation-feedback"></div>
+                                        </div>
+                                    </div>
+
+                                    <!-- LOẠI HỢP ĐỒNG - THIẾU HOÀN TOÀN -->
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                            <label for="contract_type_id" class="form-label required">Loại hợp đồng</label>
+                                            <select class="form-control @error('contract_type_id') is-invalid @enderror" id="contract_type_id" name="contract_type_id" required>
+                                                <option value="">Chọn loại hợp đồng</option>
+                                                @foreach ($contractTypes as $type)
+                                                <option value="{{ $type->id }}" {{ (old('contract_type_id', request('contract_type_id')) == $type->id) ? 'selected' : '' }}>
+                                                    {{ $type->name }}
+                                                </option>
+                                                @endforeach
+                                            </select>
+                                            @error('contract_type_id')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+                                    </div>
+
+                                    <!-- CÁC TRƯỜNG CŨ -->
                                     <div class="col-md-6">
                                         <div class="form-group">
                                             <label for="sort_order" class="form-label">Thứ tự</label>
@@ -224,31 +256,31 @@
                             <div class="card-body">
                                 <small class="text-muted">Nhấp để chèn vào nội dung:</small>
                                 <div class="mt-2">
-                                    <span class="badge badge-secondary variable-item mb-1" data-variable="@{{current_date}}">
+                                    <span class="badge-secondary variable-item mb-1" data-variable="@{{current_date}}">
                                         @{{current_date}}
                                     </span>
-                                    <span class="badge badge-secondary variable-item mb-1" data-variable="@{{contract_number}}">
+                                    <span class="badge-secondary variable-item mb-1" data-variable="@{{contract_number}}">
                                         @{{contract_number}}
                                     </span>
-                                    <span class="badge badge-secondary variable-item mb-1" data-variable="@{{transaction_value}}">
+                                    <span class="badge-secondary variable-item mb-1" data-variable="@{{transaction_value}}">
                                         @{{transaction_value}}
                                     </span>
-                                    <span class="badge badge-secondary variable-item mb-1" data-variable="@{{notary_fee}}">
+                                    <span class="badge-secondary variable-item mb-1" data-variable="@{{notary_fee}}">
                                         @{{notary_fee}}
                                     </span>
-                                    <span class="badge badge-secondary variable-item mb-1" data-variable="@{{notary_number}}">
+                                    <span class="badge-secondary variable-item mb-1" data-variable="@{{notary_number}}">
                                         @{{notary_number}}
                                     </span>
-                                    <span class="badge badge-secondary variable-item mb-1" data-variable="@{{book_number}}">
+                                    <span class="badge-secondary variable-item mb-1" data-variable="@{{book_number}}">
                                         @{{book_number}}
                                     </span>
-                                    <span class="badge badge-secondary variable-item mb-1" data-variable="@{{office_name}}">
+                                    <span class="badge-secondary variable-item mb-1" data-variable="@{{office_name}}">
                                         @{{office_name}}
                                     </span>
-                                    <span class="badge badge-secondary variable-item mb-1" data-variable="@{{office_address}}">
+                                    <span class="badge-secondary variable-item mb-1" data-variable="@{{office_address}}">
                                         @{{office_address}}
                                     </span>
-                                    <span class="badge badge-secondary variable-item mb-1" data-variable="@{{province}}">
+                                    <span class="badge-secondary variable-item mb-1" data-variable="@{{province}}">
                                         @{{province}}
                                     </span>
                                 </div>

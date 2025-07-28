@@ -221,7 +221,7 @@
                                                 </td>
                                                 <td>
                                                     <span
-                                                        class="badge badge-secondary">{{ $contractType->sort_order }}</span>
+                                                        class="badge-secondary">{{ $contractType->sort_order }}</span>
                                                 </td>
                                                 <td>
                                                     <div class="btn-group" role="group">
@@ -229,11 +229,6 @@
                                                             class="btn btn-sm btn-outline-primary" title="Chỉnh sửa">
                                                             <i class="fas fa-edit"></i>
                                                         </a>
-                                                        <button type="button"
-                                                            class="btn btn-sm btn-outline-secondary duplicate-btn"
-                                                            data-id="{{ $contractType->id }}" title="Sao chép">
-                                                            <i class="fas fa-copy"></i>
-                                                        </button>
                                                         <button type="button"
                                                             class="btn btn-sm btn-outline-danger delete-btn"
                                                             data-id="{{ $contractType->id }}"

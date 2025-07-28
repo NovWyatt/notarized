@@ -14,10 +14,6 @@
                         <a href="{{ route('admin.contract-templates.create') }}" class="btn btn-primary">
                             <i class="fas fa-plus mr-2"></i>Thêm template
                         </a>
-                        <button type="button" class="btn btn-outline-secondary" data-toggle="modal"
-                            data-target="#importModal">
-                            <i class="fas fa-upload mr-2"></i>Import
-                        </button>
                     </div>
                 </div>
 
@@ -184,7 +180,7 @@
                                                     </div>
                                                 </td>
                                                 <td>
-                                                    <span class="badge badge-outline-primary">
+                                                    <span class="badge-outline-primary">
                                                         {{ $template->contractType->name }}
                                                     </span>
                                                 </td>
@@ -207,46 +203,14 @@
                                                     </div>
                                                 </td>
                                                 <td>
-                                                    <span class="badge badge-secondary">{{ $template->sort_order }}</span>
+                                                    <span class="badge-secondary">{{ $template->sort_order }}</span>
                                                 </td>
                                                 <td>
                                                     <div class="btn-group" role="group">
-                                                        <a href="{{ route('admin.contract-templates.preview', $template) }}"
-                                                            class="btn btn-sm btn-outline-info" title="Xem trước"
-                                                            target="_blank">
-                                                            <i class="fas fa-eye"></i>
-                                                        </a>
                                                         <a href="{{ route('admin.contract-templates.edit', $template) }}"
                                                             class="btn btn-sm btn-outline-primary" title="Chỉnh sửa">
                                                             <i class="fas fa-edit"></i>
                                                         </a>
-                                                        <div class="btn-group" role="group">
-                                                            <button type="button"
-                                                                class="btn btn-sm btn-outline-secondary dropdown-toggle"
-                                                                data-toggle="dropdown" title="Thêm">
-                                                                <i class="fas fa-ellipsis-v"></i>
-                                                            </button>
-                                                            <div class="dropdown-menu">
-                                                                <button class="dropdown-item duplicate-btn"
-                                                                    data-id="{{ $template->id }}">
-                                                                    <i class="fas fa-copy mr-2"></i>Sao chép
-                                                                </button>
-                                                                <a class="dropdown-item"
-                                                                    href="{{ route('admin.contract-templates.export', $template) }}?format=html">
-                                                                    <i class="fas fa-download mr-2"></i>Xuất HTML
-                                                                </a>
-                                                                <a class="dropdown-item"
-                                                                    href="{{ route('admin.contract-templates.export', $template) }}?format=txt">
-                                                                    <i class="fas fa-file-text mr-2"></i>Xuất Text
-                                                                </a>
-                                                                <div class="dropdown-divider"></div>
-                                                                <button class="dropdown-item text-danger delete-btn"
-                                                                    data-id="{{ $template->id }}"
-                                                                    data-name="{{ $template->name }}">
-                                                                    <i class="fas fa-trash mr-2"></i>Xóa
-                                                                </button>
-                                                            </div>
-                                                        </div>
                                                     </div>
                                                 </td>
                                             </tr>

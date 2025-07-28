@@ -277,7 +277,7 @@
                                                     </div>
                                                 </td>
                                                 <td>
-                                                    <span class="badge badge-secondary">{{ $template->sort_order }}</span>
+                                                    <span class="badge-secondary">{{ $template->sort_order }}</span>
                                                 </td>
                                                 <td>
                                                     <small
@@ -285,42 +285,10 @@
                                                 </td>
                                                 <td>
                                                     <div class="btn-group" role="group">
-                                                        <a href="{{ route('admin.contract-templates.preview', $template) }}"
-                                                            class="btn btn-sm btn-outline-info" title="Xem trước"
-                                                            target="_blank">
-                                                            <i class="fas fa-eye"></i>
-                                                        </a>
                                                         <a href="{{ route('admin.contract-templates.edit', $template) }}"
                                                             class="btn btn-sm btn-outline-primary" title="Chỉnh sửa">
                                                             <i class="fas fa-edit"></i>
                                                         </a>
-                                                        <div class="btn-group" role="group">
-                                                            <button type="button"
-                                                                class="btn btn-sm btn-outline-secondary dropdown-toggle"
-                                                                data-toggle="dropdown" title="Thêm">
-                                                                <i class="fas fa-ellipsis-v"></i>
-                                                            </button>
-                                                            <div class="dropdown-menu">
-                                                                <a class="dropdown-item"
-                                                                    href="{{ route('admin.contract-templates.show', $template) }}">
-                                                                    <i class="fas fa-info mr-2"></i>Chi tiết
-                                                                </a>
-                                                                <button class="dropdown-item duplicate-btn"
-                                                                    data-id="{{ $template->id }}">
-                                                                    <i class="fas fa-copy mr-2"></i>Sao chép
-                                                                </button>
-                                                                <a class="dropdown-item"
-                                                                    href="{{ route('admin.contract-templates.export', $template) }}?format=html">
-                                                                    <i class="fas fa-download mr-2"></i>Xuất HTML
-                                                                </a>
-                                                                <div class="dropdown-divider"></div>
-                                                                <button class="dropdown-item text-danger delete-btn"
-                                                                    data-id="{{ $template->id }}"
-                                                                    data-name="{{ $template->name }}">
-                                                                    <i class="fas fa-trash mr-2"></i>Xóa
-                                                                </button>
-                                                            </div>
-                                                        </div>
                                                     </div>
                                                 </td>
                                             </tr>

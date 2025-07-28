@@ -17,7 +17,7 @@ class RouteServiceProvider extends ServiceProvider
      *
      * @var string
      */
-    public const HOME = '/home';
+    public const HOME = '/';
 
     /**
      * The controller namespace for the application.
@@ -35,6 +35,10 @@ class RouteServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        RateLimiter::for('api', function (Request $request) {
+            return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
+        });
+
         $this->configureRateLimiting();
 
         $this->routes(function () {
@@ -47,6 +51,8 @@ class RouteServiceProvider extends ServiceProvider
                 ->namespace($this->namespace)
                 ->group(base_path('routes/web.php'));
         });
+
+        $this->configureModelBindings();
     }
 
     /**
@@ -58,6 +64,40 @@ class RouteServiceProvider extends ServiceProvider
     {
         RateLimiter::for('api', function (Request $request) {
             return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
+        });
+    }
+
+    /**
+     * Configure model bindings
+     */
+    protected function configureModelBindings(): void
+    {
+        Route::model('dossier', \App\Models\Dossier::class);
+        Route::model('contract', \App\Models\Contract::class);
+        Route::model('contractTemplate', \App\Models\ContractTemplate::class);
+        Route::model('contractType', \App\Models\ContractType::class);
+        Route::model('litigant', \App\Models\Litigant::class);
+        Route::model('asset', \App\Models\Asset::class);
+
+        // Custom binding với constraints
+        Route::bind('dossier', function ($value) {
+            return \App\Models\Dossier::where('id', $value)
+                ->where('created_by', auth()->id())
+                ->firstOrFail();
+        });
+
+        Route::bind('contract', function ($value, $route) {
+            $contract = \App\Models\Contract::findOrFail($value);
+
+            // Kiểm tra contract thuộc về dossier trong route
+            if ($route->hasParameter('dossier')) {
+                $dossier = $route->parameter('dossier');
+                if ($contract->dossier_id !== $dossier->id) {
+                    abort(404, 'Contract không thuộc về dossier này');
+                }
+            }
+
+            return $contract;
         });
     }
 }

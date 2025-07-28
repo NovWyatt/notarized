@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -45,22 +46,22 @@ class Dossier extends Model
     // Relationships
     public function creator(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'created_by');
+        return $this->belongsTo(\App\Models\User::class, 'created_by');
     }
 
     public function contracts(): HasMany
     {
-        return $this->hasMany(Contract::class)->orderBy('created_at', 'desc');
+        return $this->hasMany(\App\Models\Contract::class)->orderBy('created_at', 'desc');
     }
 
     public function activeContracts(): HasMany
     {
-        return $this->hasMany(Contract::class)->where('status', Contract::STATUS_COMPLETED);
+        return $this->hasMany(\App\Models\Contract::class)->where('status', 'completed');
     }
 
     public function draftContracts(): HasMany
     {
-        return $this->hasMany(Contract::class)->where('status', Contract::STATUS_DRAFT);
+        return $this->hasMany(\App\Models\Contract::class)->where('status', 'draft');
     }
 
     // Accessors
@@ -119,7 +120,7 @@ class Dossier extends Model
     public function canBeCompleted(): bool
     {
         return $this->status === self::STATUS_PROCESSING &&
-        $this->contracts()->where('status', Contract::STATUS_COMPLETED)->count() > 0;
+               $this->contracts()->where('status', 'completed')->count() > 0;
     }
 
     public function canBeCancelled(): bool

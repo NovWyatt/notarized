@@ -129,11 +129,6 @@
                                                         </td>
                                                         <td>
                                                             <div class="btn-group" role="group">
-                                                                <a href="{{ route('admin.contract-templates.preview', $template) }}"
-                                                                    class="btn btn-sm btn-outline-info" title="Xem trước"
-                                                                    target="_blank">
-                                                                    <i class="fas fa-eye"></i>
-                                                                </a>
                                                                 <a href="{{ route('admin.contract-templates.edit', $template) }}"
                                                                     class="btn btn-sm btn-outline-primary"
                                                                     title="Chỉnh sửa">
@@ -244,9 +239,6 @@
                                         class="btn btn-info btn-sm">
                                         <i class="fas fa-list mr-2"></i>Quản lý templates
                                     </a>
-                                    <button type="button" class="btn btn-outline-secondary btn-sm" id="duplicateBtn">
-                                        <i class="fas fa-copy mr-2"></i>Sao chép loại hợp đồng
-                                    </button>
                                     <button type="button" class="btn btn-outline-warning btn-sm" id="toggleStatusBtn">
                                         <i class="fas fa-{{ $contractType->is_active ? 'pause' : 'play' }} mr-2"></i>
                                         {{ $contractType->is_active ? 'Tạm dừng' : 'Kích hoạt' }}

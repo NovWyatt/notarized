@@ -267,9 +267,6 @@
                                         class="btn btn-info btn-sm">
                                         <i class="fas fa-list mr-2"></i>Quản lý templates
                                     </a>
-                                    <button type="button" class="btn btn-outline-secondary btn-sm" id="duplicateBtn">
-                                        <i class="fas fa-copy mr-2"></i>Sao chép loại hợp đồng
-                                    </button>
                                     @if ($contractType->canBeDeleted())
                                         <button type="button" class="btn btn-outline-danger btn-sm" id="deleteBtn">
                                             <i class="fas fa-trash mr-2"></i>Xóa loại hợp đồng

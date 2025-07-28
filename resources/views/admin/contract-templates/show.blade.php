@@ -23,10 +23,6 @@
                         </p>
                     </div>
                     <div>
-                        <a href="{{ route('admin.contract-templates.preview', $contractTemplate) }}" class="btn btn-info"
-                            target="_blank">
-                            <i class="fas fa-eye mr-2"></i>Xem trước
-                        </a>
                         <a href="{{ route('admin.contract-templates.edit', $contractTemplate) }}" class="btn btn-primary">
                             <i class="fas fa-edit mr-2"></i>Chỉnh sửa
                         </a>
@@ -193,7 +189,7 @@
                                                         <span class="badge badge-warning">Bắt buộc</span>
                                                     @endif
                                                     @if (isset($clause['order']))
-                                                        <span class="badge badge-secondary">Thứ tự:
+                                                        <span class="badge-secondary">Thứ tự:
                                                             {{ $clause['order'] }}</span>
                                                     @endif
                                                 </div>
@@ -276,29 +272,6 @@
                                         class="btn btn-primary btn-sm">
                                         <i class="fas fa-edit mr-2"></i>Chỉnh sửa template
                                     </a>
-                                    <a href="{{ route('admin.contract-templates.preview', $contractTemplate) }}"
-                                        class="btn btn-info btn-sm" target="_blank">
-                                        <i class="fas fa-eye mr-2"></i>Xem trước
-                                    </a>
-                                    <button type="button" class="btn btn-outline-secondary btn-sm" id="duplicateBtn">
-                                        <i class="fas fa-copy mr-2"></i>Sao chép template
-                                    </button>
-                                    <div class="dropdown">
-                                        <button class="btn btn-outline-primary btn-sm dropdown-toggle w-100"
-                                            type="button" data-toggle="dropdown">
-                                            <i class="fas fa-download mr-2"></i>Xuất template
-                                        </button>
-                                        <div class="dropdown-menu w-100">
-                                            <a class="dropdown-item"
-                                                href="{{ route('admin.contract-templates.export', $contractTemplate) }}?format=html">
-                                                <i class="fas fa-code mr-2"></i>Xuất HTML
-                                            </a>
-                                            <a class="dropdown-item"
-                                                href="{{ route('admin.contract-templates.export', $contractTemplate) }}?format=txt">
-                                                <i class="fas fa-file-text mr-2"></i>Xuất Text
-                                            </a>
-                                        </div>
-                                    </div>
                                     <button type="button" class="btn btn-outline-warning btn-sm" id="toggleStatusBtn">
                                         <i class="fas fa-{{ $contractTemplate->is_active ? 'pause' : 'play' }} mr-2"></i>
                                         {{ $contractTemplate->is_active ? 'Tạm dừng' : 'Kích hoạt' }}
