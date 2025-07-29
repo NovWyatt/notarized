@@ -19,17 +19,17 @@ class Litigant extends Model
     ];
 
     protected $casts = [
-        'type'       => 'string',
+        'type' => 'string',
         'deleted_at' => 'datetime',
     ];
 
-    const TYPE_INDIVIDUAL         = 'individual';
-    const TYPE_ORGANIZATION       = 'organization';
+    const TYPE_INDIVIDUAL = 'individual';
+    const TYPE_ORGANIZATION = 'organization';
     const TYPE_CREDIT_INSTITUTION = 'credit_institution';
 
     const TYPES = [
-        self::TYPE_INDIVIDUAL         => 'Individual',
-        self::TYPE_ORGANIZATION       => 'Organization',
+        self::TYPE_INDIVIDUAL => 'Individual',
+        self::TYPE_ORGANIZATION => 'Organization',
         self::TYPE_CREDIT_INSTITUTION => 'Credit Institution',
     ];
 
@@ -54,6 +54,11 @@ class Litigant extends Model
     public function individualLitigant()
     {
         return $this->hasOne(IndividualLitigant::class);
+    }
+
+    public function individual()
+    {
+        return $this->individualLitigant();
     }
 
     public function organization()

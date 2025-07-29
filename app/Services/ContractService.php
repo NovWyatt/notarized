@@ -1,18 +1,16 @@
 <?php
-
 namespace App\Services;
 
 use App\Models\Contract;
 use App\Models\ContractTemplate;
 use App\Models\Dossier;
 use App\Models\Litigant;
-use App\Models\Asset;
 use Barryvdh\DomPDF\Facade\Pdf;
-use PhpOffice\PhpWord\PhpWord;
-use PhpOffice\PhpWord\IOFactory;
-use PhpOffice\PhpWord\Shared\Html;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use PhpOffice\PhpWord\IOFactory;
+use PhpOffice\PhpWord\PhpWord;
+use PhpOffice\PhpWord\Shared\Html;
 
 class ContractService
 {
@@ -29,26 +27,26 @@ class ContractService
 
         // Tạo hợp đồng
         $contract = Contract::create([
-            'dossier_id' => $dossier->id,
+            'dossier_id'           => $dossier->id,
             'contract_template_id' => $template->id,
-            'contract_number' => $contractData['contract_number'] ?? null,
-            'contract_date' => $contractData['contract_date'],
-            'transaction_value' => $contractData['transaction_value'] ?? null,
-            'notary_fee' => $contractData['notary_fee'] ?? null,
-            'notary_number' => $contractData['notary_number'] ?? null,
-            'book_number' => $contractData['book_number'] ?? null,
-            'clauses' => $contractData['clauses'] ?? $template->default_clauses,
-            'additional_info' => $contractData['additional_info'] ?? [],
-            'status' => Contract::STATUS_DRAFT,
+            'contract_number'      => $contractData['contract_number'] ?? null,
+            'contract_date'        => $contractData['contract_date'],
+            'transaction_value'    => $contractData['transaction_value'] ?? null,
+            'notary_fee'           => $contractData['notary_fee'] ?? null,
+            'notary_number'        => $contractData['notary_number'] ?? null,
+            'book_number'          => $contractData['book_number'] ?? null,
+            'clauses'              => $contractData['clauses'] ?? $template->default_clauses,
+            'additional_info'      => $contractData['additional_info'] ?? [],
+            'status'               => Contract::STATUS_DRAFT,
         ]);
 
         // Thêm đương sự
-        if (!empty($parties)) {
+        if (! empty($parties)) {
             $this->attachPartiesToContract($contract, $parties);
         }
 
         // Thêm tài sản
-        if (!empty($assets)) {
+        if (! empty($assets)) {
             $this->attachAssetsToContract($contract, $assets);
         }
 
@@ -65,11 +63,11 @@ class ContractService
     {
         foreach ($parties as $partyData) {
             $contract->parties()->create([
-                'litigant_id' => $partyData['litigant_id'],
-                'party_type' => $partyData['party_type'],
-                'group_name' => $partyData['group_name'],
+                'litigant_id'    => $partyData['litigant_id'],
+                'party_type'     => $partyData['party_type'],
+                'group_name'     => $partyData['group_name'],
                 'order_in_group' => $partyData['order_in_group'] ?? 1,
-                'notes' => $partyData['notes'] ?? null,
+                'notes'          => $partyData['notes'] ?? null,
             ]);
         }
     }
@@ -91,7 +89,7 @@ class ContractService
      */
     public function generateContractContent(Contract $contract): void
     {
-        $template = $contract->template;
+        $template        = $contract->template;
         $templateContent = $template->content;
 
         // Lấy dữ liệu để thay thế
@@ -111,7 +109,7 @@ class ContractService
     {
         $dossier = $contract->dossier;
         $parties = $contract->parties()->with('litigant')->get();
-        $assets = $contract->assets()->get();
+        $assets  = $contract->assets()->get();
 
         // Nhóm đương sự theo group
         $partiesByGroup = $parties->groupBy('group_name');
@@ -119,21 +117,21 @@ class ContractService
         // Dữ liệu cơ bản
         $data = [
             // Thông tin hợp đồng
-            'contract_number' => $contract->contract_number,
-            'contract_date' => $contract->contract_date->format('d/m/Y'),
-            'transaction_value' => $contract->formatted_transaction_value,
-            'notary_fee' => $contract->notary_fee,
-            'notary_number' => $contract->notary_number,
-            'book_number' => $contract->book_number,
+            'contract_number'     => $contract->contract_number,
+            'contract_date'       => $contract->contract_date->format('d/m/Y'),
+            'transaction_value'   => $contract->formatted_transaction_value,
+            'notary_fee'          => $contract->notary_fee,
+            'notary_number'       => $contract->notary_number,
+            'book_number'         => $contract->book_number,
 
             // Thông tin hồ sơ
-            'dossier_name' => $dossier->name,
+            'dossier_name'        => $dossier->name,
             'dossier_description' => $dossier->description,
 
             // Thời gian hiện tại
-            'current_date' => now()->format('d/m/Y'),
-            'current_time' => now()->format('H:i'),
-            'current_year' => now()->format('Y'),
+            'current_date'        => now()->format('d/m/Y'),
+            'current_time'        => now()->format('H:i'),
+            'current_year'        => now()->format('Y'),
         ];
 
         // Thêm thông tin đương sự theo nhóm
@@ -142,7 +140,7 @@ class ContractService
 
             // Thêm từng đương sự riêng lẻ
             foreach ($groupParties as $index => $party) {
-                $key = strtolower(str_replace(' ', '_', $groupName)) . '_' . ($index + 1);
+                $key        = strtolower(str_replace(' ', '_', $groupName)) . '_' . ($index + 1);
                 $data[$key] = $this->formatPartyInfo($party);
             }
         }
@@ -167,9 +165,9 @@ class ContractService
         })->implode('; ');
     }
 
-    /**
-     * Định dạng thông tin đương sự
-     */
+/**
+ * Định dạng thông tin đương sự
+ */
     private function formatPartyInfo($party): string
     {
         $litigant = $party->litigant;
@@ -177,22 +175,37 @@ class ContractService
         // Lấy thông tin chi tiết tùy theo loại đương sự
         switch ($litigant->type) {
             case 'individual':
-                $individual = $litigant->individual;
-                return $individual ?
-                    "{$litigant->full_name}, CCCD/CMND: {$individual->id_number}, địa chỉ: {$individual->address}" :
-                    $litigant->full_name;
+                // SỬA: Đổi từ $litigant->individual thành $litigant->individualLitigant
+                $individual = $litigant->individualLitigant;
+                if ($individual) {
+                    // Lấy thông tin giấy tờ tùy thân đầu tiên (nếu có)
+                    $identityInfo = $litigant->identity_info ?: 'Chưa có CCCD/CMND';
+
+                    // Lấy địa chỉ thường trú (nếu có)
+                    $address     = $litigant->addresses->where('address_type', 'permanent')->first();
+                    $addressText = $address ? $address->full_address : 'Chưa có địa chỉ';
+
+                    return "{$litigant->full_name}, {$identityInfo}, ĐC: {$addressText}";
+                }
+                return $litigant->full_name;
 
             case 'organization':
                 $organization = $litigant->organization;
-                return $organization ?
-                    "{$litigant->full_name}, MST: {$organization->tax_code}, địa chỉ: {$organization->address}" :
-                    $litigant->full_name;
+                if ($organization) {
+                    $address     = $litigant->addresses->first();
+                    $addressText = $address ? $address->full_address : 'Chưa có địa chỉ';
+                    return "{$litigant->full_name}, MST: {$organization->tax_code}, ĐC: {$addressText}";
+                }
+                return $litigant->full_name;
 
             case 'credit_institution':
                 $creditInstitution = $litigant->creditInstitution;
-                return $creditInstitution ?
-                    "{$litigant->full_name}, loại hình: {$creditInstitution->organization_type}, địa chỉ: {$creditInstitution->address}" :
-                    $litigant->full_name;
+                if ($creditInstitution) {
+                    $address     = $litigant->addresses->first();
+                    $addressText = $address ? $address->full_address : 'Chưa có địa chỉ';
+                    return "{$litigant->full_name}, loại hình: {$creditInstitution->organization_type}, ĐC: {$addressText}";
+                }
+                return $litigant->full_name;
 
             default:
                 return $litigant->full_name;
@@ -259,7 +272,7 @@ class ContractService
         // Thay thế các placeholder {{key}}
         foreach ($data as $key => $value) {
             $placeholder = '{{' . $key . '}}';
-            $content = str_replace($placeholder, $value, $content);
+            $content     = str_replace($placeholder, $value, $content);
         }
 
         // Xử lý các điều kiện IF
@@ -280,11 +293,11 @@ class ContractService
         $pattern = '/\{\{#if\s+(\w+)\}\}(.*?)\{\{\/if\}\}/s';
 
         return preg_replace_callback($pattern, function ($matches) use ($data) {
-            $key = $matches[1];
+            $key                = $matches[1];
             $conditionalContent = $matches[2];
 
             // Kiểm tra điều kiện
-            if (isset($data[$key]) && !empty($data[$key])) {
+            if (isset($data[$key]) && ! empty($data[$key])) {
                 return $conditionalContent;
             }
 
@@ -301,10 +314,10 @@ class ContractService
         $pattern = '/\{\{#each\s+(\w+)\}\}(.*?)\{\{\/each\}\}/s';
 
         return preg_replace_callback($pattern, function ($matches) use ($data) {
-            $key = $matches[1];
+            $key         = $matches[1];
             $loopContent = $matches[2];
 
-            if (!isset($data[$key]) || !is_array($data[$key])) {
+            if (! isset($data[$key]) || ! is_array($data[$key])) {
                 return '';
             }
 
@@ -373,11 +386,11 @@ class ContractService
         $filename = $this->generateFileName($contract, 'docx');
 
         // Lưu file
-        $path = "exports/contracts/{$filename}";
+        $path   = "exports/contracts/{$filename}";
         $writer = IOFactory::createWriter($phpWord, 'Word2007');
 
         $tempPath = storage_path("app/{$path}");
-        if (!file_exists(dirname($tempPath))) {
+        if (! file_exists(dirname($tempPath))) {
             mkdir(dirname($tempPath), 0755, true);
         }
 
@@ -417,7 +430,7 @@ class ContractService
     {
         $contractNumber = $contract->contract_number ?: 'HD_' . $contract->id;
         $contractNumber = Str::slug($contractNumber);
-        $timestamp = now()->format('YmdHis');
+        $timestamp      = now()->format('YmdHis');
 
         return "{$contractNumber}_{$timestamp}.{$extension}";
     }
@@ -433,11 +446,11 @@ class ContractService
         }
 
         return [
-            'content' => $contract->content,
+            'content'       => $contract->content,
             'parties_count' => $contract->parties()->count(),
-            'assets_count' => $contract->assets()->count(),
-            'status' => $contract->status,
-            'can_export' => $contract->status === Contract::STATUS_COMPLETED,
+            'assets_count'  => $contract->assets()->count(),
+            'status'        => $contract->status,
+            'can_export'    => $contract->status === Contract::STATUS_COMPLETED,
         ];
     }
 }

@@ -48,11 +48,11 @@ class DossierController extends Controller
 
         // Thống kê
         $stats = [
-            'total'      => Dossier::where('created_by', auth()->id())->count(),
-            'draft'      => Dossier::where('created_by', auth()->id())->byStatus(Dossier::STATUS_DRAFT)->count(),
+            'total' => Dossier::where('created_by', auth()->id())->count(),
+            'draft' => Dossier::where('created_by', auth()->id())->byStatus(Dossier::STATUS_DRAFT)->count(),
             'processing' => Dossier::where('created_by', auth()->id())->byStatus(Dossier::STATUS_PROCESSING)->count(),
-            'completed'  => Dossier::where('created_by', auth()->id())->byStatus(Dossier::STATUS_COMPLETED)->count(),
-            'cancelled'  => Dossier::where('created_by', auth()->id())->byStatus(Dossier::STATUS_CANCELLED)->count(),
+            'completed' => Dossier::where('created_by', auth()->id())->byStatus(Dossier::STATUS_COMPLETED)->count(),
+            'cancelled' => Dossier::where('created_by', auth()->id())->byStatus(Dossier::STATUS_CANCELLED)->count(),
         ];
 
         return view('admin.dossiers.index', compact('dossiers', 'stats'));
@@ -72,7 +72,7 @@ class DossierController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name'        => [
+            'name' => [
                 'required',
                 'string',
                 'max:255',
@@ -85,10 +85,10 @@ class DossierController extends Controller
 
         try {
             $dossier = Dossier::create([
-                'name'        => $validated['name'],
+                'name' => $validated['name'],
                 'description' => $validated['description'],
-                'created_by'  => auth()->id(),
-                'status'      => Dossier::STATUS_DRAFT,
+                'created_by' => auth()->id(),
+                'status' => Dossier::STATUS_DRAFT,
             ]);
 
             return redirect()
@@ -109,8 +109,8 @@ class DossierController extends Controller
     {
         // Debug: Log đầu vào
         Log::info('DossierController@show START', [
-            'dossier_id'  => $id,
-            'user_id'     => auth()->id(),
+            'dossier_id' => $id,
+            'user_id' => auth()->id(),
             'request_url' => request()->fullUrl(),
         ]);
 
@@ -120,10 +120,10 @@ class DossierController extends Controller
                 ->where('created_by', auth()->id())
                 ->first();
 
-            if (! $dossier) {
+            if (!$dossier) {
                 Log::warning('Dossier not found, redirecting to index', [
                     'dossier_id' => $id,
-                    'user_id'    => auth()->id(),
+                    'user_id' => auth()->id(),
                 ]);
 
                 return redirect()
@@ -141,9 +141,11 @@ class DossierController extends Controller
 
             // Load contract types với active templates
             $contractTypes = ContractType::active()
-                ->with(['activeTemplates' => function ($query) {
-                    $query->ordered();
-                }])
+                ->with([
+                    'activeTemplates' => function ($query) {
+                        $query->ordered();
+                    }
+                ])
                 ->ordered()
                 ->get();
 
@@ -152,23 +154,23 @@ class DossierController extends Controller
                 'types' => $contractTypes->pluck('name', 'id')->toArray(),
             ]);
 
-                                      // Load all litigants và assets cho user hiện tại (để backwards compatibility)
-                                      // Nhưng thực tế sẽ dùng API search
+            // Load all litigants và assets cho user hiện tại (để backwards compatibility)
+            // Nhưng thực tế sẽ dùng API search
             $litigants = collect([]); // Để trống vì sẽ dùng API search
-            $assets    = collect([]); // Để trống vì sẽ dùng API search
+            $assets = collect([]); // Để trống vì sẽ dùng API search
 
             // Load contracts của dossier để tính stats
-            $contracts     = $dossier->contracts()->with(['template', 'parties.litigant'])->get();
+            $contracts = $dossier->contracts()->with(['template', 'parties.litigant'])->get();
             $contractStats = [
-                'total'       => $contracts->count(),
-                'draft'       => $contracts->where('status', 'draft')->count(),
-                'completed'   => $contracts->where('status', 'completed')->count(),
+                'total' => $contracts->count(),
+                'draft' => $contracts->where('status', 'draft')->count(),
+                'completed' => $contracts->where('status', 'completed')->count(),
                 'total_value' => $contracts->sum('transaction_value'),
             ];
 
             Log::info('Before rendering view', [
-                'dossier_id'     => $dossier->id,
-                'dossier_name'   => $dossier->name,
+                'dossier_id' => $dossier->id,
+                'dossier_name' => $dossier->name,
                 'contract_types' => $contractTypes->count(),
                 'contract_stats' => $contractStats,
             ]);
@@ -185,8 +187,8 @@ class DossierController extends Controller
         } catch (\Exception $e) {
             Log::error('Exception in DossierController@show', [
                 'error' => $e->getMessage(),
-                'file'  => $e->getFile(),
-                'line'  => $e->getLine(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString(),
             ]);
 
@@ -205,21 +207,21 @@ class DossierController extends Controller
             ->where('created_by', auth()->id())
             ->firstOrFail();
         $validated = $request->validate([
-            'contract_template_id'     => 'required|exists:contract_templates,id',
-            'contract_date'            => 'required|date|before_or_equal:today',
-            'transaction_value'        => 'nullable|numeric|min:0',
-            'notary_fee'               => 'nullable|string|max:255',
-            'notary_number'            => 'nullable|string|max:255',
-            'book_number'              => 'nullable|string|max:255',
-            'parties'                  => 'required|array|min:1',
-            'parties.*.litigant_id'    => 'required|exists:litigants,id',
-            'parties.*.party_type'     => 'required|string',
-            'parties.*.group_name'     => 'required|string',
+            'contract_template_id' => 'required|exists:contract_templates,id',
+            'contract_date' => 'required|date|before_or_equal:today',
+            'transaction_value' => 'nullable|numeric|min:0',
+            'notary_fee' => 'nullable|string|max:255',
+            'notary_number' => 'nullable|string|max:255',
+            'book_number' => 'nullable|string|max:255',
+            'parties' => 'required|array|min:1',
+            'parties.*.litigant_id' => 'required|exists:litigants,id',
+            'parties.*.party_type' => 'required|string',
+            'parties.*.group_name' => 'required|string',
             'parties.*.order_in_group' => 'nullable|integer|min:1',
-            'parties.*.notes'          => 'nullable|string|max:500',
-            'assets'                   => 'nullable|array',
-            'assets.*.asset_id'        => 'required|exists:assets,id',
-            'assets.*.notes'           => 'nullable|string|max:500',
+            'parties.*.notes' => 'nullable|string|max:500',
+            'assets' => 'nullable|array',
+            'assets.*.asset_id' => 'required|exists:assets,id',
+            'assets.*.notes' => 'nullable|string|max:500',
         ]);
 
         try {
@@ -275,11 +277,13 @@ class DossierController extends Controller
             ->where('dossier_id', $dossier->id)
             ->firstOrFail();
 
+        // SỬA: Load relationships với tên chính xác
         $contract->load([
             'template.contractType',
-            'parties.litigant.individual',
+            'parties.litigant.individualLitigant', // Đổi từ 'individual' thành 'individualLitigant'
             'parties.litigant.organization',
             'parties.litigant.creditInstitution',
+            'parties.litigant.addresses', // Thêm addresses để hiển thị địa chỉ
             'assets.realEstate',
             'assets.movableProperty',
         ]);
@@ -288,7 +292,9 @@ class DossierController extends Controller
         $preview = $this->contractService->getContractPreview($contract);
 
         return view('admin.dossiers.show-contract', compact(
-            'dossier', 'contract', 'preview'
+            'dossier',
+            'contract',
+            'preview'
         ));
     }
 
@@ -350,7 +356,7 @@ class DossierController extends Controller
 
         $templateId = $request->get('template_id');
 
-        if (! $templateId) {
+        if (!$templateId) {
             return response()->json(['error' => 'Template ID is required'], 400);
         }
 
@@ -359,12 +365,12 @@ class DossierController extends Controller
 
             // Sample data để preview
             $sampleData = [
-                'current_date'      => now()->format('d/m/Y'),
-                'contract_number'   => 'HĐ001/2025',
+                'current_date' => now()->format('d/m/Y'),
+                'contract_number' => 'HĐ001/2025',
                 'transaction_value' => '1,000,000,000 VNĐ',
-                'parties_Bên A'     => 'Nguyễn Văn A - CCCD: 123456789',
-                'parties_Bên B'     => 'Công ty TNHH ABC - MST: 0123456789',
-                'assets_list'       => '1. Nhà ở tại 123 Đường ABC, Quận 1, TP.HCM',
+                'parties_Bên A' => 'Nguyễn Văn A - CCCD: 123456789',
+                'parties_Bên B' => 'Công ty TNHH ABC - MST: 0123456789',
+                'assets_list' => '1. Nhà ở tại 123 Đường ABC, Quận 1, TP.HCM',
             ];
 
             // Xử lý template với sample data
@@ -374,8 +380,8 @@ class DossierController extends Controller
             }
 
             return response()->json([
-                'success'       => true,
-                'content'       => $content,
+                'success' => true,
+                'content' => $content,
                 'template_name' => $template->name,
                 'contract_type' => $template->contractType->name,
             ]);
@@ -383,7 +389,7 @@ class DossierController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'error'   => 'Không thể tải preview template',
+                'error' => 'Không thể tải preview template',
             ], 500);
         }
     }
@@ -405,11 +411,11 @@ class DossierController extends Controller
                 ->findOrFail($templateId);
 
             return response()->json([
-                'id'                => $template->id,
-                'name'              => $template->name,
-                'contract_type'     => $template->contractType->name,
+                'id' => $template->id,
+                'name' => $template->name,
+                'contract_type' => $template->contractType->name,
                 'template_settings' => $template->template_settings,
-                'default_clauses'   => $template->default_clauses,
+                'default_clauses' => $template->default_clauses,
             ]);
 
         } catch (\Exception $e) {
@@ -426,12 +432,12 @@ class DossierController extends Controller
             ->where('created_by', auth()->id())
             ->firstOrFail();
 
-        if (! $dossier->canBeUpdated()) {
+        if (!$dossier->canBeUpdated()) {
             return back()->with('error', 'Hồ sơ này không thể chỉnh sửa.');
         }
 
         $validated = $request->validate([
-            'name'        => [
+            'name' => [
                 'required',
                 'string',
                 'max:255',
@@ -466,7 +472,7 @@ class DossierController extends Controller
             ->where('created_by', auth()->id())
             ->firstOrFail();
 
-        if (! $dossier->canBeUpdated()) {
+        if (!$dossier->canBeUpdated()) {
             return view('admin.dossiers.show');
         }
 
@@ -482,7 +488,7 @@ class DossierController extends Controller
             ->where('created_by', auth()->id())
             ->firstOrFail();
 
-        if (! $dossier->canBeCancelled()) {
+        if (!$dossier->canBeCancelled()) {
             return back()->with('error', 'Hồ sơ này không thể xóa.');
         }
 
@@ -516,9 +522,9 @@ class DossierController extends Controller
             $dossier->update(['status' => $validated['status']]);
 
             return response()->json([
-                'success'      => true,
-                'message'      => 'Trạng thái hồ sơ đã được cập nhật.',
-                'status'       => $validated['status'],
+                'success' => true,
+                'message' => 'Trạng thái hồ sơ đã được cập nhật.',
+                'status' => $validated['status'],
                 'status_label' => $dossier->status_label,
                 'status_color' => $dossier->status_color,
             ]);

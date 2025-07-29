@@ -10,6 +10,7 @@ use App\Http\Controllers\CustomAuthController;
 use App\Http\Controllers\IssuingAuthorityController;
 use App\Http\Controllers\LitigantController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -202,3 +203,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
 });
 
 Route::get('/admin/assets/generate-names', [AssetController::class, 'generateMissingAssetNames']);
+
+Route::middleware(['auth','admin'])->group(function () {
+    Route::resource('users', UserController::class);
+});

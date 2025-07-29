@@ -227,6 +227,11 @@
                             <span class="item-name">Admin Logs</span>
                         </a>
                     </li>
+                     <li class="nav-item">
+                        <a class="nav-link {{ request()->is('user*') ? 'active' : '' }}" aria-current="page" href="{{ route('users.index') }}">
+                            <span class="item-name">Quản Lý User</span>
+                        </a>
+                    </li>
                     <li class="nav-item">
                         <a class="nav-link {{ request()->is('admin/contract-templates*') ? 'active' : '' }}" aria-current="page" href="{{ route('admin.contract-templates.index') }}">
                             <span class="item-name">Biểu Mẫu Hợp Đồng</span>

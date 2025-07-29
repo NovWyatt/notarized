@@ -36,23 +36,16 @@
                         <i class="fas fa-edit me-2"></i>Chỉnh sửa
                     </a>
                 @endif
-                <div class="dropdown">
-                    <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                        <i class="fas fa-cog me-2"></i>Thao tác
-                    </button>
-                    <ul class="dropdown-menu">
-                        @if($dossier->status !== \App\Models\Dossier::STATUS_COMPLETED)
-                            <li><a class="dropdown-item" href="#" onclick="updateStatus('completed')">
-                                    <i class="fas fa-check me-2"></i>Đánh dấu hoàn thành
-                                </a></li>
-                        @endif
-                        @if($dossier->canBeCancelled())
-                            <li><a class="dropdown-item text-danger" href="#" onclick="deleteDossier()">
-                                    <i class="fas fa-trash me-2"></i>Xóa hồ sơ
-                                </a></li>
-                        @endif
-                    </ul>
-                </div>
+                @if($dossier->status !== \App\Models\Dossier::STATUS_COMPLETED)
+                    <a class="btn btn-outline-secondary" href="#" onclick="updateStatus('completed')">
+                        <i class="fas fa-check me-2"></i>hoàn thành
+                    </a>
+                @endif
+                @if($dossier->canBeCancelled())
+                    <a class="btn btn-outline-secondary" href="#" onclick="deleteDossier()">
+                        <i class="fas fa-trash me-2"></i>Xóa hồ sơ
+                    </a>
+                @endif
             </div>
         </div>
 
@@ -304,7 +297,7 @@
                         <div class="d-flex justify-content-between align-items-center">
                             <span class="text-muted">Templates</span>
                             <span class="badge bg-secondary">{{ $contractTypes->sum(fn($type) => $type->templates->count())
-                                    }}</span>
+                                                }}</span>
                         </div>
 
                         <hr>
